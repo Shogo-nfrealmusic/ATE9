@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "rules": [
+    {
+      "path": "rules"
+    }
+  ],
+  "context": [
+    {
+      "path": "design/design.png",
+      "purpose": "reference"
+    },
+    {
+      "path": "design/design.html",
+      "purpose": "reference"
+    }
+  ]
+}
