@@ -36,8 +36,20 @@ export type PortfolioContent = {
   items: PortfolioItem[];
 };
 
+export type AboutContent = {
+  heading: string;
+  description: string;
+};
+
+export type MissionContent = {
+  heading: string;
+  description: string;
+};
+
 export type LandingContent = {
   hero: HeroContent;
+  about: AboutContent;
+  mission: MissionContent;
   services: ServicesContent;
   portfolio: PortfolioContent;
 };

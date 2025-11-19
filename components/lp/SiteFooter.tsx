@@ -1,89 +1,102 @@
 "use client";
 
+import { fadeInUp, viewportOnce } from "@/lib/motion/variants";
+import { motion } from "framer-motion";
 import Link from "next/link";
 
 export function SiteFooter() {
   return (
-    <footer className="bg-section-light dark:bg-gray-900">
-      <div className="mx-auto max-w-6xl px-6 py-12">
-        <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-          <div className="flex flex-col items-center gap-4 md:items-start">
-            <Link href="#" className="flex items-center gap-3">
-              <div className="text-primary size-5">
-                <svg
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M6 6H42L36 24L42 42H6L12 24L6 6Z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold leading-tight tracking-tighter text-text-headings dark:text-white">
-                ATE9
-              </h2>
-            </Link>
-            <p className="text-sm text-text-body dark:text-gray-400">
-              © 2024 ATE9. All rights reserved.
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
+    <motion.footer
+      className="bg-black border-t border-ate9-gray mt-16"
+      id="contact"
+      initial="hidden"
+      whileInView="visible"
+      viewport={viewportOnce}
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
+          },
+        },
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-10 py-8 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-6">
+        <motion.p
+          className="text-white/80 text-sm font-medium"
+          variants={fadeInUp}
+        >
+          We are not a company. We are a family.
+        </motion.p>
+        <motion.div
+          className="flex flex-col items-center md:items-end gap-4"
+          variants={fadeInUp}
+        >
+          <div className="flex items-center gap-5">
             <Link
               href="#"
-              className="text-text-body transition-colors hover:text-primary dark:text-gray-400 dark:hover:text-primary"
+              className="text-white/70 transition-colors hover:text-ate9-red"
+              aria-label="Link to Facebook profile"
+            >
+              <svg
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+              </svg>
+            </Link>
+            <Link
+              href="#"
+              className="text-white/70 transition-colors hover:text-ate9-red"
               aria-label="Link to Twitter profile"
             >
               <svg
-                aria-hidden="true"
-                className="h-6 w-6"
-                fill="currentColor"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.71v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
+                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
               </svg>
             </Link>
             <Link
               href="#"
-              className="text-text-body transition-colors hover:text-primary dark:text-gray-400 dark:hover:text-primary"
-              aria-label="Link to GitHub profile"
+              className="text-white/70 transition-colors hover:text-ate9-red"
+              aria-label="Link to Instagram profile"
             >
               <svg
-                aria-hidden="true"
-                className="h-6 w-6"
-                fill="currentColor"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                <path
-                  clipRule="evenodd"
-                  d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.165 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z"
-                  fillRule="evenodd"
-                ></path>
-              </svg>
-            </Link>
-            <Link
-              href="#"
-              className="text-text-body transition-colors hover:text-primary dark:text-gray-400 dark:hover:text-primary"
-              aria-label="Link to LinkedIn profile"
-            >
-              <svg
-                aria-hidden="true"
-                className="h-6 w-6"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  clipRule="evenodd"
-                  d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"
-                  fillRule="evenodd"
-                ></path>
+                <rect height="20" rx="5" ry="5" width="20" x="2" y="2"></rect>
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
               </svg>
             </Link>
           </div>
-        </div>
+          <p className="text-xs text-white/50">© 2024 ATE9. All rights reserved.</p>
+        </motion.div>
       </div>
-    </footer>
+    </motion.footer>
   );
 }
-

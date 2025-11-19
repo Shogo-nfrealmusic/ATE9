@@ -1,7 +1,9 @@
 import { supabase } from "@/lib/supabase/client";
 import type {
+    AboutContent,
     HeroContent,
     LandingContent,
+    MissionContent,
     PortfolioContent,
     PortfolioItem,
     ServiceItem,
@@ -12,13 +14,22 @@ const ROW_ID = "default";
 
 const FALLBACK_CONTENT: LandingContent = {
   hero: {
-    heading: "Elevating Experiences, One Design at a Time.",
+    heading: "夢なんて願わない。俺たちは、喰らって叶える。",
     subheading:
-      "ATE9 crafts intuitive and impactful digital solutions that resonate with users and drive business growth.",
-    ctaLabel: "Get Started",
+      "We don't wish for dreams. We devour them to achieve them. ATE9 is a tribe of limit-breakers, a movement of challengers. We exist to break limits, feeding on dreams and turning them into flesh and blood to move the world.",
+    ctaLabel: "Contact",
     ctaLink: "#contact",
-    imageUrl:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuA9_PjLsnpXE6JG3InGgvT0zkecIjXHHbHARZ4pGLohKmgakBLOaO2bAMz7cSBCigmE_ray8NK8h1SNYygQEfyoygiBYHvXgrFEjgf4CaC6VA6sftCs9jwuCNeTT2JbhXzFKXoKTPazbIFPWkaPqaN832w75O3YDRQF1dS827PiJ_wVFbVhKeL7cDgD3LVti6eVlc36STVf2oxaJiX5B5p_XdYdJ0uTbSbzPTAnlbfmw8Rid5e4q65qsjYXci5Pzq_ZMX8V4MGDtTE",
+    imageUrl: "",
+  },
+  about: {
+    heading: "ATE9 は会社ではない。挑戦者の\"家\"だ。",
+    description:
+      "ATE9 is not a company. It's a \"HOME\" for challengers. A is for Ace, T is for Top, E is for Evolve, Elevate, and Empower. The '9' represents the limits we are destined to devour, pushing beyond what's possible to redefine reality itself.",
+  },
+  mission: {
+    heading: "俺たちは限界を壊すために存在する。夢をエサにし、血肉に変え、世界を動かす。",
+    description:
+      "ATE9 is not a \"company,\" but a \"movement\" that evolves, elevates, and empowers its companions.",
   },
   services: {
     intro:
@@ -141,6 +152,53 @@ type PortfolioItemRow = {
   sort_order: number;
 };
 
+type ContentRow = {
+  content: {
+    about?: {
+      heading: string;
+      description: string;
+    };
+    mission?: {
+      heading: string;
+      description: string;
+    };
+  } | null;
+};
+
+async function getAboutFromDb(): Promise<AboutContent | null> {
+  const { data, error } = await supabase
+    .from("lp_content")
+    .select("content")
+    .eq("id", ROW_ID)
+    .single<ContentRow>();
+
+  if (error || !data?.content?.about) {
+    return null;
+  }
+
+  return {
+    heading: data.content.about.heading,
+    description: data.content.about.description,
+  };
+}
+
+async function getMissionFromDb(): Promise<MissionContent | null> {
+  const { data, error } = await supabase
+    .from("lp_content")
+    .select("content")
+    .eq("id", ROW_ID)
+    .single<ContentRow>();
+
+  if (error || !data?.content?.mission) {
+    return null;
+  }
+
+  return {
+    heading: data.content.mission.heading,
+    description: data.content.mission.description,
+  };
+}
+
 async function getHeroFromDb(): Promise<HeroContent | null> {
   const { data, error } = await supabase
     .from("lp_hero")
@@ -231,14 +289,18 @@ async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
 }
 
 export async function getLandingContent(): Promise<LandingContent> {
-  const [hero, services, portfolio] = await Promise.all([
+  const [hero, about, mission, services, portfolio] = await Promise.all([
     getHeroFromDb(),
+    getAboutFromDb(),
+    getMissionFromDb(),
     getServicesFromDb(),
     getPortfolioFromDb(),
   ]);
 
   return {
     hero: hero ?? FALLBACK_CONTENT.hero,
+    about: about ?? FALLBACK_CONTENT.about,
+    mission: mission ?? FALLBACK_CONTENT.mission,
     services: services ?? FALLBACK_CONTENT.services,
     portfolio: portfolio ?? FALLBACK_CONTENT.portfolio,
   };
@@ -354,11 +416,73 @@ async function savePortfolioToDb(portfolio: PortfolioContent): Promise<void> {
   }
 }
 
+async function saveAboutToDb(about: AboutContent): Promise<void> {
+  const { data: existing } = await supabase
+    .from("lp_content")
+    .select("content")
+    .eq("id", ROW_ID)
+    .single<ContentRow>();
+
+  const currentContent = existing?.content ?? {};
+  const updatedContent = {
+    ...currentContent,
+    about: {
+      heading: about.heading,
+      description: about.description,
+    },
+  };
+
+  const { error } = await supabase.from("lp_content").upsert(
+    {
+      id: ROW_ID,
+      content: updatedContent,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+async function saveMissionToDb(mission: MissionContent): Promise<void> {
+  const { data: existing } = await supabase
+    .from("lp_content")
+    .select("content")
+    .eq("id", ROW_ID)
+    .single<ContentRow>();
+
+  const currentContent = existing?.content ?? {};
+  const updatedContent = {
+    ...currentContent,
+    mission: {
+      heading: mission.heading,
+      description: mission.description,
+    },
+  };
+
+  const { error } = await supabase.from("lp_content").upsert(
+    {
+      id: ROW_ID,
+      content: updatedContent,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 export async function saveLandingContent(
   content: LandingContent
 ): Promise<LandingContent> {
   await Promise.all([
     saveHeroToDb(content.hero),
+    saveAboutToDb(content.about),
+    saveMissionToDb(content.mission),
     saveServicesToDb(content.services),
     savePortfolioToDb(content.portfolio),
   ]);

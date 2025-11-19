@@ -1,9 +1,9 @@
 "use client";
 
+import { fadeInUp, hoverScale, motionTransition, staggerContainer, viewportOnce } from "@/lib/motion/variants";
 import type { PortfolioContent } from "@/types/landing";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
 
 type SectionPortfolioProps = {
   content: PortfolioContent;
@@ -15,70 +15,115 @@ export function SectionPortfolio({ content }: SectionPortfolioProps) {
   }
 
   return (
-    <section
-      className="bg-background-light dark:bg-background-dark"
-      id="portfolio"
-    >
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <motion.div
+    <section className="py-24 px-10" id="portfolio">
+      <div className="max-w-6xl mx-auto">
+        <motion.h2
+          className="text-center text-white text-4xl font-bold leading-tight tracking-[-0.015em]"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="flex flex-col items-center gap-4 text-center"
+          viewport={viewportOnce}
+          transition={motionTransition.default}
         >
-          <h2 className="text-3xl font-bold leading-tight tracking-tighter text-text-headings dark:text-white md:text-4xl">
-            {content.heading}
-          </h2>
-          <p className="max-w-2xl text-lg text-text-body dark:text-gray-300">
+          {content.heading}
+        </motion.h2>
+        {content.subheading && (
+          <motion.p
+            className="mt-4 mb-12 text-center text-white/70 text-sm md:text-base max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={viewportOnce}
+            transition={motionTransition.default}
+          >
             {content.subheading}
-          </p>
-        </motion.div>
-        <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
-          {content.items.map((item, idx) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: idx * 0.1 }}
-              className="group flex flex-col gap-4"
-            >
-              <div className="overflow-hidden rounded-xl">
-                <Image
-                  className="aspect-video w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  src={item.imageUrl}
-                  alt={item.title}
-                  width={600}
-                  height={400}
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <h3 className="text-xl font-bold text-text-headings dark:text-white">
-                  {item.title}
-                </h3>
-                <p className="text-text-body dark:text-gray-300">
-                  {item.description}
-                </p>
-                {item.linkUrl && (
-                  <Link
-                    href={item.linkUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center text-sm font-medium text-primary hover:underline"
+          </motion.p>
+        )}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+        >
+          {content.items.map((item) => {
+            const card = (
+              <motion.div
+                className="group relative overflow-hidden rounded-xl bg-ate9-gray"
+                variants={fadeInUp}
+                whileHover={hoverScale}
+              >
+              <motion.div
+                className="relative w-full h-full"
+                transition={motionTransition.fast}
+                whileHover={{ y: -4 }}
+              >
+                  <Image
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                    src={item.imageUrl}
+                    width={400}
+                    height={300}
+                  />
+                  {/* ベースのダークグラデーション */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+                  {/* ホバー時にブランドレッドがふわっと乗るレイヤー */}
+                  <div className="absolute inset-0 opacity-0 bg-gradient-to-t from-ate9-red/40 via-transparent to-transparent mix-blend-screen transition-opacity duration-300 group-hover:opacity-100" />
+                  <motion.div
+                    className="absolute inset-0 flex flex-col justify-end p-6 gap-2"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={viewportOnce}
+                    transition={motionTransition.fast}
                   >
-                    View site
-                    <span className="material-symbols-outlined ml-1 text-base">
-                      open_in_new
-                    </span>
-                  </Link>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                    <h3 className="text-white text-2xl font-bold transition-colors duration-300 group-hover:text-ate9-red-light">
+                      {item.title}
+                    </h3>
+                    {item.description && (
+                      <p className="text-sm text-white/80 line-clamp-2">
+                        {item.description}
+                      </p>
+                    )}
+                    {item.linkUrl && (
+                      <span className="mt-4 inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                        <span className="relative inline-block">
+                          <span className="relative z-10">View Project</span>
+                          <span className="pointer-events-none absolute -bottom-0.5 left-0 h-px w-full origin-left scale-x-50 bg-white/30 transition-transform duration-300 group-hover:scale-x-100 group-hover:bg-ate9-red" />
+                        </span>
+                      </span>
+                    )}
+                  </motion.div>
+                  <motion.div
+                    className="pointer-events-none absolute inset-0 rounded-xl border-2 border-transparent"
+                    whileHover={{ borderColor: "rgb(242, 66, 109)" }}
+                    transition={motionTransition.fast}
+                  />
+                </motion.div>
+              </motion.div>
+            );
+
+            if (!item.linkUrl) {
+              return (
+                <div key={item.id} className="h-full">
+                  {card}
+                </div>
+              );
+            }
+
+            const isExternal = /^https?:\/\//.test(item.linkUrl);
+
+            return (
+              <a
+                key={item.id}
+                href={item.linkUrl}
+                target={isExternal ? "_blank" : undefined}
+                rel={isExternal ? "noopener noreferrer" : undefined}
+                className="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              >
+                {card}
+              </a>
+            );
+          })}
+        </motion.div>
       </div>
     </section>
   );
 }
-

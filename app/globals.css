@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* ATE9 LP カラーパレット（新デザイン用） */
+@theme {
+  --color-ate9-bg: #000000;
+  --color-ate9-red-dark: #8e1616;
+  --color-ate9-red: #ff0303;
+  --color-ate9-gray: #3c3d37;
+  --color-ate9-white: #ffffff;
+}
+
 /* Tailwind v4 の theme 相当は一旦未使用のため、単純なユーティリティクラスとして定義 */
 @layer utilities {
   .bg-background-light {

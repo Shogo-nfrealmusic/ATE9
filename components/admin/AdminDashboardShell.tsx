@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { saveLandingContent } from "@/services/cms/landing";
 import type { LandingContent } from "@/types/landing";
 import { useState, useTransition } from "react";
+import { AboutEditor } from "./AboutEditor";
 import { HeroEditor } from "./HeroEditor";
+import { MissionEditor } from "./MissionEditor";
 import { PortfolioEditor } from "./PortfolioEditor";
 import { ServicesEditor } from "./ServicesEditor";
 
@@ -12,7 +14,7 @@ type AdminDashboardShellProps = {
   initialContent: LandingContent;
 };
 
-type SavingSection = "hero" | "services" | "portfolio" | null;
+type SavingSection = "hero" | "about" | "mission" | "services" | "portfolio" | null;
 type ActiveSection = Exclude<SavingSection, null>;
 
 export function AdminDashboardShell({
@@ -52,9 +54,19 @@ export function AdminDashboardShell({
         description: "メインのキャッチコピーとキービジュアルを編集します。",
       },
       {
+        id: "about",
+        label: "About",
+        description: "Aboutセクションの見出しと説明文を編集します。",
+      },
+      {
+        id: "mission",
+        label: "Mission",
+        description: "Missionセクションの見出しと説明文を編集します。",
+      },
+      {
         id: "services",
         label: "Services",
-        description: "サービス紹介スライダーのテキストとギャラリーを編集します。",
+        description: "サービス紹介のテキストとカード一覧を編集します。",
       },
       {
         id: "portfolio",
@@ -116,6 +128,24 @@ export function AdminDashboardShell({
             onChange={(hero) => setContent((prev) => ({ ...prev, hero }))}
             onSave={() => persist("hero")}
             isSaving={isSaving("hero")}
+          />
+        )}
+
+        {activeSection === "about" && (
+          <AboutEditor
+            about={content.about}
+            onChange={(about) => setContent((prev) => ({ ...prev, about }))}
+            onSave={() => persist("about")}
+            isSaving={isSaving("about")}
+          />
+        )}
+
+        {activeSection === "mission" && (
+          <MissionEditor
+            mission={content.mission}
+            onChange={(mission) => setContent((prev) => ({ ...prev, mission }))}
+            onSave={() => persist("mission")}
+            isSaving={isSaving("mission")}
           />
         )}
 

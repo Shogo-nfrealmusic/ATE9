@@ -1,274 +1,89 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { fadeInUp, hoverScale, motionTransition, staggerContainer, viewportOnce } from "@/lib/motion/variants";
 import type { ServicesContent } from "@/types/landing";
 import { motion } from "framer-motion";
-import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
 
 type SectionServicesProps = {
   content: ServicesContent;
 };
 
 export function SectionServices({ content }: SectionServicesProps) {
-  const services = useMemo(
-    () => content.items || [],
-    [content.items]
-  );
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // 自動切り替え
-  useEffect(() => {
-    if (!isAutoPlaying || services.length === 0) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % services.length);
-    }, 4000); // 4秒ごとに切り替え
-
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, services.length]);
-
-  // 各アイテムの位置とスケールを計算
-  const getItemTransform = (index: number, activeIndex: number) => {
-    const diff = index - activeIndex;
-    const isCurrent = diff === 0;
-
-    if (isCurrent) {
-      return {
-        x: 0,
-        scale: 1.0177,
-        skewX: 0,
-        zIndex: 1,
-        opacity: 1,
-      };
-    }
-
-    // 左側のアイテム（負のdiff）
-    if (diff < 0) {
-      const offset = Math.abs(diff) * 143.176; // パーセンテージベースのオフセット
-      return {
-        x: -offset,
-        scale: 1,
-        skewX: -19.0901,
-        zIndex: 2,
-        opacity: 0.3,
-      };
-    }
-
-    // 右側のアイテム（正のdiff）
-    const offset = diff * 143.176;
-    return {
-      x: offset,
-      scale: 1,
-      skewX: 19.0901,
-      zIndex: 2,
-      opacity: 0.3,
-    };
-  };
-
-  if (services.length === 0) {
-    return (
-      <section
-        className="bg-section-pastel dark:bg-gray-900/50"
-        id="services"
-      >
-        <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-          <p className="text-center text-text-body">
-            No services available
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  const safeIndex = Math.min(currentIndex, services.length - 1);
-
   return (
-    <section
-      ref={containerRef}
-      className="bg-section-pastel dark:bg-gray-900/50"
-      id="services"
-    >
-      <div className="mx-auto max-w-6xl px-6 py-20 md:py-28">
-        <Card className="overflow-hidden bg-white">
-          <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-2 lg:gap-16">
-            {/* 左側: テキストコンテンツ */}
+    <section className="py-24 px-10" id="services">
+      <div className="max-w-6xl mx-auto">
+        <motion.h2
+          className="text-center text-white text-4xl font-bold leading-tight tracking-[-0.015em]"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={viewportOnce}
+          transition={motionTransition.default}
+        >
+          Our Services
+        </motion.h2>
+        {content.intro && (
+          <motion.p
+            className="mt-4 mb-12 text-center text-white/70 text-sm md:text-base max-w-3xl mx-auto"
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={viewportOnce}
+            transition={motionTransition.default}
+          >
+            {content.intro}
+          </motion.p>
+        )}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          variants={staggerContainer}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewportOnce}
+        >
+          {content.items.map((item) => (
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="flex flex-col gap-6 p-8 lg:p-12"
+              key={item.id}
+              className="group relative overflow-hidden rounded-xl bg-ate9-gray"
+              variants={fadeInUp}
+              whileHover={hoverScale}
             >
-              <div className="flex flex-col gap-4">
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary dark:bg-primary/20 w-fit">
-                  SERVICES
-                </span>
-                <div className="flex items-center gap-3">
-                  <div className="text-primary size-8 shrink-0">
-                    <svg
-                      fill="none"
-                      viewBox="0 0 48 48"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        d="M6 6H42L36 24L42 42H6L12 24L6 6Z"
-                        fill="currentColor"
-                      />
-                    </svg>
-                  </div>
-                  <h2 className="text-3xl font-bold text-text-headings">
-                    ATE9
-                  </h2>
-                </div>
-                <p className="text-lg text-text-body">{content.intro}</p>
-              </div>
+              <motion.div
+                className="relative h-full p-8 flex flex-col gap-4"
+                transition={motionTransition.fast}
+                whileHover={{ y: -4 }}
+              >
+                {/* ベースのダークグラデーション */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+                {/* ホバー時にブランドレッドがふわっと乗るレイヤー */}
+                <div className="pointer-events-none absolute inset-0 opacity-0 bg-gradient-to-br from-ate9-red/40 via-transparent to-transparent mix-blend-screen transition-opacity duration-300 group-hover:opacity-100" />
 
-              {/* テキストコンテンツ（フェードイン/アウト） */}
-              <div className="relative min-h-[200px]">
-                {services.map((service, index) => {
-                  const isCurrent = index === safeIndex;
-                  return (
-                    <motion.div
-                      key={service.id}
-                      initial={false}
-                      animate={{
-                        opacity: isCurrent ? 1 : 0,
-                        visibility: isCurrent ? "visible" : "hidden",
-                      }}
-                      transition={{ duration: 0.4, ease: "easeInOut" }}
-                      className="absolute inset-0"
-                    >
-                      <h3 className="text-3xl font-bold leading-tight tracking-tighter text-text-headings md:text-4xl">
-                        {service.title}
-                      </h3>
-                      <p className="mt-4 text-lg text-text-body">
-                        {service.description}
-                      </p>
-                    </motion.div>
-                  );
-                })}
-              </div>
+                <div className="relative z-10 flex flex-col gap-4">
+                  <h3 className="text-white text-lg font-semibold tracking-[-0.01em] transition-colors duration-300 group-hover:text-ate9-red-light">
+                    {item.title}
+                  </h3>
 
-              <Button size="lg" className="w-full sm:w-auto">
-                <span className="material-symbols-outlined rounded-full bg-white/20 p-1 text-xl">
-                  arrow_forward
-                </span>
-                <span className="truncate">Explore Services</span>
-              </Button>
-            </motion.div>
-
-            {/* 右側: スライダー */}
-            <div className="relative flex h-full min-h-[400px] items-center justify-center overflow-hidden p-8 lg:min-h-[500px]">
-              <div className="relative h-[450px] w-full max-w-[500px]">
-                {services.map((service, index) => {
-                  const transform = getItemTransform(index, safeIndex);
-                  return (
-                    <motion.div
-                      key={service.id}
-                      className="absolute inset-0"
-                      style={{
-                        zIndex: transform.zIndex,
-                      }}
-                      animate={{
-                        x: `${transform.x}%`,
-                        scale: transform.scale,
-                        skewX: `${transform.skewX}deg`,
-                        opacity: transform.opacity,
-                      }}
-                      transition={{
-                        duration: 0.6,
-                        ease: [0.25, 0.1, 0.25, 1],
-                      }}
-                    >
-                      <motion.div
-                        className="h-full w-full"
-                        style={{
-                          backgroundColor: service.backgroundColor,
-                          transform: `translate3d(${transform.x > 0 ? transform.x : 0}%, 0, 0) skew(${-transform.skewX}deg, 0deg)`,
-                        }}
-                        animate={{
-                          x: transform.x > 0 ? `${transform.x}%` : "0%",
-                        }}
-                        transition={{
-                          duration: 0.6,
-                          ease: [0.25, 0.1, 0.25, 1],
-                        }}
-                      >
-                        <div className="relative h-full w-full overflow-hidden rounded-[24px]">
-                          <div className="flex h-full flex-col p-3">
-                            <div className="flex items-center justify-between">
-                              <span className="material-symbols-outlined text-gray-700 dark:text-gray-300">
-                                menu
-                              </span>
-                              <span className="text-xs font-bold text-gray-600 dark:text-gray-400">
-                                ATE9 productions.
-                              </span>
-                              <span className="material-symbols-outlined text-gray-700 dark:text-gray-300">
-                                menu
-                              </span>
-                            </div>
-                            <div className="mt-4 grid flex-1 grid-cols-2 gap-3">
-                              {service.gallery.map((src, idx) => (
-                                <div
-                                  key={idx}
-                                  className="rounded-lg bg-white/80 backdrop-blur-sm"
-                                >
-                                  <Image
-                                    alt={`gallery item ${idx + 1}`}
-                                    className="h-full w-full rounded-lg object-cover"
-                                    src={src}
-                                    width={100}
-                                    height={100}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-                            <div className="mt-3 flex items-center justify-between">
-                              <span className="material-symbols-outlined text-gray-400">
-                                circle
-                              </span>
-                              <span className="material-symbols-outlined text-gray-400">
-                                square
-                              </span>
-                              <span className="material-symbols-outlined text-primary">
-                                open_in_new
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              {/* インジケーター */}
-              <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-2">
-                {services.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => {
-                      setCurrentIndex(index);
-                      setIsAutoPlaying(false); // 手動操作時は自動再生を停止
-                      // 5秒後に自動再生を再開
-                      setTimeout(() => setIsAutoPlaying(true), 5000);
-                    }}
-                    className={`h-2 rounded-full transition-all ${
-                      index === safeIndex
-                        ? "w-8 bg-primary"
-                        : "w-2 bg-gray-300"
-                    }`}
-                    aria-label={`Go to service ${index + 1}`}
+                  {/* 下線アニメーション */}
+                  <motion.div
+                    className="w-8 h-px bg-ate9-red"
+                    initial={{ scaleX: 0, originX: 0 }}
+                    whileInView={{ scaleX: 1 }}
+                    viewport={viewportOnce}
+                    transition={{ delay: 0.2, ...motionTransition.fast }}
                   />
-                ))}
-              </div>
-            </div>
-          </div>
-        </Card>
+
+                  <p className="text-white/80 text-xs md:text-sm leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+
+                <motion.div
+                  className="pointer-events-none absolute inset-0 rounded-xl border-2 border-transparent"
+                  whileHover={{ borderColor: "rgb(242, 66, 109)" }}
+                  transition={motionTransition.fast}
+                />
+              </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
     </section>
   );
