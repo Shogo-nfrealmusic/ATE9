@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import type React from "react";
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import type { JSX, ReactNode } from 'react';
 
 type CharacterCountTextareaProps = {
   id: string;
-  label: React.ReactNode;
+  label: ReactNode;
   value: string;
   onChange: (value: string) => void;
   rows?: number;
@@ -27,7 +27,7 @@ export function CharacterCountTextarea({
   onChange,
   rows,
   placeholder,
-}: CharacterCountTextareaProps) {
+}: CharacterCountTextareaProps): JSX.Element {
   return (
     <div className="space-y-2">
       <Label htmlFor={id} className="text-text-headings">
@@ -44,5 +44,3 @@ export function CharacterCountTextarea({
     </div>
   );
 }
-
-
