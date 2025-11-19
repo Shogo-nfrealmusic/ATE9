@@ -17,6 +17,31 @@ export function SectionHero({ content }: SectionHeroProps) {
     ? content.subheading.split("\n")
     : [content.subheading];
 
+  const handleCtaClick = () => {
+    const link = content.ctaLink?.trim();
+    if (!link) return;
+
+    // 同一ページ内のアンカー（例: #contact）の場合はスムーススクロール
+    if (link.startsWith("#")) {
+      if (typeof document !== "undefined") {
+        const target = document.querySelector(link);
+        if (target instanceof HTMLElement) {
+          target.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+      return;
+    }
+
+    // 外部 URL or パスの場合はそのまま遷移
+    if (typeof window !== "undefined") {
+      if (link.startsWith("http://") || link.startsWith("https://")) {
+        window.open(link, "_blank", "noopener,noreferrer");
+      } else {
+        window.location.href = link;
+      }
+    }
+  };
+
   return (
     <section
       className="flex min-h-screen flex-col items-center justify-center text-center p-8 relative overflow-hidden"
@@ -56,7 +81,7 @@ export function SectionHero({ content }: SectionHeroProps) {
 
       {/* メインコンテンツ */}
       <motion.div
-        className="relative z-10 flex flex-col gap-6"
+        className="relative z-10 flex flex-col gap-8"
         variants={staggerContainerFast}
         initial="hidden"
         animate="visible"
@@ -92,6 +117,22 @@ export function SectionHero({ content }: SectionHeroProps) {
             </motion.span>
           ))}
         </motion.h2>
+
+        {/* CTA ボタン */}
+        {content.ctaLabel && (
+          <motion.div
+            variants={fadeInUp}
+            className="mt-2 flex justify-center"
+          >
+            <button
+              type="button"
+              onClick={handleCtaClick}
+              className="inline-flex items-center justify-center rounded-full bg-ate9-red px-8 py-3 text-sm font-bold tracking-[0.08em] uppercase text-white shadow-lg shadow-ate9-red/30 transition-transform transition-colors hover:bg-ate9-red-dark hover:shadow-ate9-red/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            >
+              {content.ctaLabel}
+            </button>
+          </motion.div>
+        )}
       </motion.div>
     </section>
   );

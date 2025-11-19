@@ -1,4 +1,6 @@
 import { SectionAbout } from "@/components/lp/SectionAbout";
+import { SectionBrandPhilosophy } from "@/components/lp/SectionBrandPhilosophy";
+import { SectionContactForm } from "@/components/lp/SectionContactForm";
 import { SectionHero } from "@/components/lp/SectionHero";
 import { SectionMission } from "@/components/lp/SectionMission";
 import { SectionPortfolio } from "@/components/lp/SectionPortfolio";
@@ -16,9 +18,11 @@ export default async function LPPage() {
       <main className="flex-grow">
         <SectionHero content={content.hero} />
         <SectionAbout content={content.about} />
+        <SectionBrandPhilosophy />
         <SectionMission content={content.mission} />
         <SectionServices content={content.services} />
         <SectionPortfolio content={content.portfolio} />
+        <SectionContactForm />
       </main>
       <SiteFooter />
     </div>
