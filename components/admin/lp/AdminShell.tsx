@@ -2,6 +2,7 @@
 
 import { saveLandingContent } from '@/services/cms/landing';
 import type { LandingContent } from '@/types/landing';
+import { useRouter } from 'next/navigation';
 import type { JSX } from 'react';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -24,19 +25,26 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
   const [activeSection, setActiveSection] = useState<ActiveSection>('hero');
   const [savingSection, setSavingSection] = useState<ActiveSection | null>(null);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   // contentが更新されたら、refも更新する
   useEffect(() => {
     contentRef.current = content;
   }, [content]);
 
+  // initialContentが変更されたときにローカルステートを更新
+  useEffect(() => {
+    setContent(initialContent);
+  }, [initialContent]);
+
   const handleSave = (section: ActiveSection) => {
     setSavingSection(section);
     startTransition(async () => {
       try {
         // refから最新のcontentを取得
-        const saved = await saveLandingContent(contentRef.current);
-        setContent(saved);
+        await saveLandingContent(contentRef.current);
+        // サーバー側のデータを再取得して、最新の状態を反映
+        router.refresh();
         toast.success('保存しました', {
           description: `${getSectionLabel(section)}の内容を保存しました`,
         });
