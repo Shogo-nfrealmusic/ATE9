@@ -1,6 +1,6 @@
 'use client';
 
-import { saveLandingContent } from '@/services/cms/landing';
+import { saveLandingContentAction } from '@/app/actions/landing';
 import type { LandingContent } from '@/types/landing';
 import { useRouter } from 'next/navigation';
 import type { JSX } from 'react';
@@ -42,7 +42,7 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
     startTransition(async () => {
       try {
         // refから最新のcontentを取得
-        await saveLandingContent(contentRef.current);
+        await saveLandingContentAction(contentRef.current);
         // サーバー側のデータを再取得して、最新の状態を反映
         router.refresh();
         toast.success('保存しました', {
