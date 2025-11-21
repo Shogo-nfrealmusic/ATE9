@@ -2,8 +2,9 @@
 
 import { saveLandingContent } from '@/services/cms/landing';
 import type { LandingContent } from '@/types/landing';
+import { useRouter } from 'next/navigation';
 import type { JSX } from 'react';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { SectionTabs } from './SectionTabs';
 import { AboutSectionEditor } from './sections/AboutSectionEditor';
@@ -23,13 +24,20 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
   const [activeSection, setActiveSection] = useState<ActiveSection>('hero');
   const [savingSection, setSavingSection] = useState<ActiveSection | null>(null);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  // initialContentが変更されたときにローカルステートを更新
+  useEffect(() => {
+    setContent(initialContent);
+  }, [initialContent]);
 
   const handleSave = (section: ActiveSection) => {
     setSavingSection(section);
     startTransition(async () => {
       try {
-        const saved = await saveLandingContent(content);
-        setContent(saved);
+        await saveLandingContent(content);
+        // サーバー側のデータを再取得して、最新の状態を反映
+        router.refresh();
         toast.success('保存しました', {
           description: `${getSectionLabel(section)}の内容を保存しました`,
         });
