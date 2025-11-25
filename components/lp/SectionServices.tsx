@@ -17,10 +17,10 @@ type SectionServicesProps = {
 
 export function SectionServices({ content }: SectionServicesProps): JSX.Element {
   return (
-    <section className="py-24 px-10" id="services">
-      <div className="max-w-6xl mx-auto">
+    <section className="px-4 py-16 sm:px-6 md:py-20 lg:px-10 lg:py-24" id="services">
+      <div className="mx-auto max-w-6xl">
         <motion.h2
-          className="text-center text-white text-4xl font-bold leading-tight tracking-[-0.015em]"
+          className="text-center text-3xl font-bold leading-tight tracking-[-0.015em] text-white sm:text-4xl"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={viewportOnce}
@@ -30,7 +30,7 @@ export function SectionServices({ content }: SectionServicesProps): JSX.Element 
         </motion.h2>
         {content.intro && (
           <motion.p
-            className="mt-4 mb-12 text-center text-white/70 text-sm md:text-base max-w-3xl mx-auto"
+            className="mx-auto mt-4 mb-10 max-w-3xl text-center text-sm text-white/70 sm:text-base"
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={viewportOnce}
@@ -40,7 +40,7 @@ export function SectionServices({ content }: SectionServicesProps): JSX.Element 
           </motion.p>
         )}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+          className="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
           variants={staggerContainer}
           initial="hidden"
           whileInView="visible"
@@ -49,12 +49,12 @@ export function SectionServices({ content }: SectionServicesProps): JSX.Element 
           {content.items.map((item) => (
             <motion.div
               key={item.id}
-              className="group relative overflow-hidden rounded-xl bg-ate9-gray"
+              className="group relative h-full overflow-hidden rounded-xl bg-ate9-gray"
               variants={fadeInUp}
               whileHover={hoverScale}
             >
               <motion.div
-                className="relative h-full p-8 flex flex-col gap-4"
+                className="relative flex h-full flex-col gap-4 p-6 sm:p-8"
                 transition={motionTransition.fast}
                 whileHover={{ y: -4 }}
               >
@@ -64,7 +64,7 @@ export function SectionServices({ content }: SectionServicesProps): JSX.Element 
                 <div className="pointer-events-none absolute inset-0 opacity-0 bg-linear-to-br from-ate9-red/40 via-transparent to-transparent mix-blend-screen transition-opacity duration-300 group-hover:opacity-100" />
 
                 <div className="relative z-10 flex flex-col gap-4">
-                  <h3 className="text-white text-lg font-semibold tracking-[-0.01em] transition-colors duration-300 group-hover:text-ate9-red-light">
+                  <h3 className="text-lg font-semibold tracking-[-0.01em] text-white transition-colors duration-300 group-hover:text-ate9-red-light">
                     {item.title}
                   </h3>
 
@@ -77,7 +77,7 @@ export function SectionServices({ content }: SectionServicesProps): JSX.Element 
                     transition={{ delay: 0.2, ...motionTransition.fast }}
                   />
 
-                  <p className="text-white/80 text-xs md:text-sm leading-relaxed">
+                  <p className="text-xs leading-relaxed text-white/80 sm:text-sm">
                     {item.description}
                   </p>
                 </div>

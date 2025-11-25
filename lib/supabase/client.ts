@@ -1,26 +1,46 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-/**
- * Supabase クライアント
- *
- * - 本番 / 開発環境では NEXT_PUBLIC_SUPABASE_* を必須とし、
- *   未設定の場合は「疑似クライアント」でエラーを返させる前提で
- *   `services/cms/landing` 側が FALLBACK_CONTENT にフォールバックする。
- * - これにより、CI やローカルで Supabase の環境変数が未設定でも
- *   ビルド自体は通り、LP は常にデフォルトコンテンツで表示される。
- */
-let supabase: SupabaseClient;
+let browserClient: SupabaseClient | null = null;
 
-if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
-} else {
-  // 環境変数がない場合はダミーのエンドポイントでクライアントを作成する。
-  // 実際の API コールは失敗するが、呼び出し側で error を検知して
-  // FALLBACK_CONTENT にフォールバックする設計になっている。
-  supabase = createClient('https://example.supabase.co', 'public-anon-key');
+function createFallbackClient(): SupabaseClient {
+  return createClient('https://example.supabase.co', 'public-anon-key');
 }
 
-export { supabase };
+/**
+ * Public（ブラウザ / RSC 読み取り）向けクライアント
+ */
+export function createBrowserSupabaseClient(): SupabaseClient {
+  if (browserClient) {
+    return browserClient;
+  }
+
+  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    browserClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else {
+    browserClient = createFallbackClient();
+  }
+
+  return browserClient;
+}
+
+/**
+ * Server Action / Admin 保存処理向け service role クライアント
+ */
+export function createServerSupabaseClient(): SupabaseClient {
+  if (!SUPABASE_URL) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set');
+  }
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set');
+  }
+
+  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: {
+      persistSession: false,
+    },
+  });
+}

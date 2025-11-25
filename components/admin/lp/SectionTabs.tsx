@@ -1,10 +1,10 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Briefcase, FolderOpen, Info, LayoutDashboard, Target } from 'lucide-react';
+import { Briefcase, FolderOpen, Info, LayoutDashboard, Sparkles } from 'lucide-react';
 import type { JSX } from 'react';
 
-type ActiveSection = 'hero' | 'about' | 'mission' | 'services' | 'portfolio';
+export type ActiveSection = 'hero' | 'about' | 'services' | 'portfolio' | 'brandPhilosophy';
 
 type SectionTabsProps = {
   activeSection: ActiveSection;
@@ -22,14 +22,14 @@ const sections: {
     icon: LayoutDashboard,
   },
   {
+    id: 'brandPhilosophy',
+    label: 'Brand Philosophy',
+    icon: Sparkles,
+  },
+  {
     id: 'about',
     label: 'About',
     icon: Info,
-  },
-  {
-    id: 'mission',
-    label: 'Mission',
-    icon: Target,
   },
   {
     id: 'services',
@@ -54,7 +54,7 @@ export function SectionTabs({ activeSection, onSectionChange }: SectionTabsProps
             key={section.id}
             onClick={() => onSectionChange(section.id)}
             className={cn(
-              'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors',
+              'w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer',
               isActive ? 'bg-ate9-red text-white shadow-md' : 'text-white/70 hover:bg-white/5',
             )}
           >
