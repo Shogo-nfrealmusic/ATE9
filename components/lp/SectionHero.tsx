@@ -45,7 +45,7 @@ export function SectionHero({ content }: SectionHeroProps): JSX.Element {
 
   return (
     <section
-      className="flex min-h-screen flex-col items-center justify-center text-center p-8 relative overflow-hidden"
+      className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-20 text-center sm:px-6 lg:px-10"
       id="hero"
     >
       {/* 背景グラデーション */}
@@ -74,7 +74,7 @@ export function SectionHero({ content }: SectionHeroProps): JSX.Element {
 
       {/* 下部の赤いライン */}
       <motion.div
-        className="absolute bottom-10 h-0.5 w-1/4 bg-linear-to-r from-transparent via-ate9-red-dark to-transparent z-0"
+        className="absolute bottom-10 z-0 h-0.5 w-1/3 bg-linear-to-r from-transparent via-ate9-red-dark to-transparent"
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
         transition={{ delay: 0.8, ...motionTransition.default }}
@@ -82,14 +82,14 @@ export function SectionHero({ content }: SectionHeroProps): JSX.Element {
 
       {/* メインコンテンツ */}
       <motion.div
-        className="relative z-10 flex flex-col gap-8"
+        className="relative z-10 flex flex-col gap-6 sm:gap-8"
         variants={staggerContainerFast}
         initial="hidden"
         animate="visible"
       >
         {/* 見出し（行ごとにstagger） */}
         <motion.h1
-          className="text-white text-5xl font-bold leading-tight tracking-tighter md:text-7xl"
+          className="text-4xl font-bold leading-tight tracking-tighter text-white sm:text-5xl md:text-6xl lg:text-7xl"
           variants={fadeInUp}
         >
           {headingLines.map((line, index) => (
@@ -101,7 +101,7 @@ export function SectionHero({ content }: SectionHeroProps): JSX.Element {
 
         {/* サブコピー */}
         <motion.h2
-          className="text-white/80 text-base font-normal leading-normal max-w-2xl mx-auto md:text-lg"
+          className="mx-auto max-w-3xl text-sm font-normal leading-relaxed text-white/80 sm:text-base md:text-lg"
           variants={fadeInUp}
         >
           {subheadingLines.map((line, index) => (
@@ -113,11 +113,11 @@ export function SectionHero({ content }: SectionHeroProps): JSX.Element {
 
         {/* CTA ボタン */}
         {content.ctaLabel && (
-          <motion.div variants={fadeInUp} className="mt-2 flex justify-center">
+          <motion.div variants={fadeInUp} className="mt-4 flex justify-center">
             <button
               type="button"
               onClick={handleCtaClick}
-              className="inline-flex items-center justify-center rounded-full bg-ate9-red px-8 py-3 text-sm font-bold tracking-[0.08em] uppercase text-white shadow-lg shadow-ate9-red/30 transition hover:bg-ate9-red-dark hover:shadow-ate9-red/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+              className="inline-flex w-full cursor-pointer items-center justify-center rounded-full bg-ate9-red px-8 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg shadow-ate9-red/30 transition hover:bg-ate9-red-dark hover:shadow-ate9-red/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:min-w-[160px] sm:w-auto"
             >
               {content.ctaLabel}
             </button>
