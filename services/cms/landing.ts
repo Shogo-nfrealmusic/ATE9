@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase/client';
+import { createBrowserSupabaseClient } from '@/lib/supabase/client';
 import type {
   AboutContent,
   BrandPhilosophyContent,
@@ -9,8 +9,10 @@ import type {
   ServiceItem,
   ServicesContent,
 } from '@/types/landing';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 const ROW_ID = 'default';
+const publicSupabase = createBrowserSupabaseClient();
 
 const FALLBACK_CONTENT: LandingContent = {
   hero: {
@@ -236,7 +238,7 @@ type ContentRow = {
 };
 
 async function getAboutFromDb(): Promise<AboutContent | null> {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from('lp_content')
     .select('content')
     .eq('id', ROW_ID)
@@ -253,7 +255,7 @@ async function getAboutFromDb(): Promise<AboutContent | null> {
 }
 
 async function getBrandPhilosophyFromDb(): Promise<BrandPhilosophyContent | null> {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from('lp_content')
     .select('content')
     .eq('id', ROW_ID)
@@ -267,7 +269,7 @@ async function getBrandPhilosophyFromDb(): Promise<BrandPhilosophyContent | null
 }
 
 async function getHeroFromDb(): Promise<HeroContent | null> {
-  const { data, error } = await supabase
+  const { data, error } = await publicSupabase
     .from('lp_hero')
     .select('heading, subheading, cta_label, cta_link, image_url')
     .eq('id', ROW_ID)
@@ -289,8 +291,8 @@ async function getHeroFromDb(): Promise<HeroContent | null> {
 async function getServicesFromDb(): Promise<ServicesContent | null> {
   const [{ data: serviceRow, error: servicesError }, { data: items, error: itemsError }] =
     await Promise.all([
-      supabase.from('lp_services').select('intro').eq('id', ROW_ID).single<ServiceRow>(),
-      supabase
+      publicSupabase.from('lp_services').select('intro').eq('id', ROW_ID).single<ServiceRow>(),
+      publicSupabase
         .from('lp_service_items')
         .select('id, title, description, background_color, gallery, sort_order')
         .eq('services_id', ROW_ID)
@@ -318,12 +320,12 @@ async function getServicesFromDb(): Promise<ServicesContent | null> {
 
 async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
   const [{ data: meta, error: metaError }, { data: items, error: itemsError }] = await Promise.all([
-    supabase
+    publicSupabase
       .from('lp_portfolio')
       .select('heading, subheading')
       .eq('id', ROW_ID)
       .single<PortfolioRow>(),
-    supabase
+    publicSupabase
       .from('lp_portfolio_items')
       .select('id, title, description, image_url, link_url, sort_order')
       .eq('portfolio_id', ROW_ID)
@@ -385,7 +387,10 @@ function mergeLpContentSections(
   };
 }
 
-async function saveLpContentSections(content: LandingContent): Promise<void> {
+async function saveLpContentSections(
+  supabase: SupabaseClient,
+  content: LandingContent,
+): Promise<void> {
   const { data: existing, error: existingError } = await supabase
     .from('lp_content')
     .select('content')
@@ -412,7 +417,7 @@ async function saveLpContentSections(content: LandingContent): Promise<void> {
   }
 }
 
-async function saveHeroToDb(hero: HeroContent): Promise<void> {
+async function saveHeroToDb(supabase: SupabaseClient, hero: HeroContent): Promise<void> {
   const { error } = await supabase.from('lp_hero').upsert(
     {
       id: ROW_ID,
@@ -431,101 +436,62 @@ async function saveHeroToDb(hero: HeroContent): Promise<void> {
   }
 }
 
-async function saveServicesToDb(services: ServicesContent): Promise<void> {
-  const { error: upsertError } = await supabase.from('lp_services').upsert(
-    {
+async function saveServicesToDb(
+  supabase: SupabaseClient,
+  services: ServicesContent,
+): Promise<void> {
+  const { error } = await supabase.rpc('upsert_lp_services', {
+    p_services: {
       id: ROW_ID,
       intro: services.intro,
-      updated_at: new Date().toISOString(),
+      items: services.items,
     },
-    { onConflict: 'id' },
-  );
+  });
 
-  if (upsertError) {
-    throw new Error(upsertError.message);
-  }
-
-  const { error: deleteError } = await supabase
-    .from('lp_service_items')
-    .delete()
-    .eq('services_id', ROW_ID);
-
-  if (deleteError) {
-    throw new Error(deleteError.message);
-  }
-
-  const rows =
-    services.items.map((item, index) => ({
-      id: item.id,
-      services_id: ROW_ID,
-      title: item.title,
-      description: item.description,
-      background_color: item.backgroundColor,
-      gallery: item.gallery,
-      sort_order: index,
-    })) ?? [];
-
-  if (rows.length > 0) {
-    const { error: insertError } = await supabase.from('lp_service_items').insert(rows);
-
-    if (insertError) {
-      throw new Error(insertError.message);
-    }
+  if (error) {
+    throw new Error(error.message);
   }
 }
 
-async function savePortfolioToDb(portfolio: PortfolioContent): Promise<void> {
-  const { error: upsertError } = await supabase.from('lp_portfolio').upsert(
-    {
+async function savePortfolioToDb(
+  supabase: SupabaseClient,
+  portfolio: PortfolioContent,
+): Promise<void> {
+  const { error } = await supabase.rpc('upsert_lp_portfolio', {
+    p_portfolio: {
       id: ROW_ID,
       heading: portfolio.heading,
       subheading: portfolio.subheading,
-      updated_at: new Date().toISOString(),
+      items: portfolio.items,
     },
-    { onConflict: 'id' },
-  );
+  });
 
-  if (upsertError) {
-    throw new Error(upsertError.message);
-  }
-
-  const { error: deleteError } = await supabase
-    .from('lp_portfolio_items')
-    .delete()
-    .eq('portfolio_id', ROW_ID);
-
-  if (deleteError) {
-    throw new Error(deleteError.message);
-  }
-
-  const rows =
-    portfolio.items.map((item, index) => ({
-      id: item.id,
-      portfolio_id: ROW_ID,
-      title: item.title,
-      description: item.description,
-      image_url: item.imageUrl,
-      link_url: item.linkUrl ?? null,
-      sort_order: index,
-    })) ?? [];
-
-  if (rows.length > 0) {
-    const { error: insertError } = await supabase.from('lp_portfolio_items').insert(rows);
-
-    if (insertError) {
-      throw new Error(insertError.message);
-    }
+  if (error) {
+    throw new Error(error.message);
   }
 }
 
-export async function saveLandingContent(content: LandingContent): Promise<LandingContent> {
-  await saveLpContentSections(content);
+type SaveLandingContentParams = {
+  supabase: SupabaseClient;
+  content: LandingContent;
+};
 
-  await Promise.all([
-    saveHeroToDb(content.hero),
-    saveServicesToDb(content.services),
-    savePortfolioToDb(content.portfolio),
+export async function saveLandingContent({
+  supabase,
+  content,
+}: SaveLandingContentParams): Promise<LandingContent> {
+  await saveLpContentSections(supabase, content);
+
+  const results = await Promise.allSettled([
+    saveHeroToDb(supabase, content.hero),
+    saveServicesToDb(supabase, content.services),
+    savePortfolioToDb(supabase, content.portfolio),
   ]);
+
+  const rejected = results.find((result) => result.status === 'rejected');
+  if (rejected && rejected.status === 'rejected') {
+    throw rejected.reason instanceof Error ? rejected.reason : new Error(String(rejected.reason));
+  }
 
   return content;
 }
