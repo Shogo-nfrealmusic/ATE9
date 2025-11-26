@@ -201,7 +201,7 @@ export function ServicesSectionEditor({
               <TableBody>
                 {services.items.map((item, index) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-mono text-xs text-text-body/80">
+                    <TableCell className="font-mono text-xs text-black">
                       {item.slug || '-'}
                     </TableCell>
                     <TableCell className="font-medium text-text-headings">
@@ -259,6 +259,7 @@ export function ServicesSectionEditor({
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Creative Direction"
+                className="bg-black/70 border-white/30 text-white placeholder:text-white/40 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               />
             </div>
             <div className="space-y-2">
@@ -278,6 +279,7 @@ export function ServicesSectionEditor({
                   setFormData({ ...formData, slug: normalized });
                 }}
                 placeholder="creative-production"
+                className="bg-black/70 border-white/30 text-white placeholder:text-white/40 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               />
               <p
                 className={`text-xs ${
@@ -309,12 +311,16 @@ export function ServicesSectionEditor({
                 value={formData.backgroundColor}
                 onValueChange={(value) => setFormData({ ...formData, backgroundColor: value })}
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <SelectTrigger className="h-12 rounded-lg border-white/30 bg-black/70 text-white focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black">
+                  <SelectValue placeholder="Select color" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-white/20 bg-black/90 text-white">
                   {colorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      className="text-white focus:bg-ate9-red/20 focus:text-white"
+                    >
                       {option.label}
                     </SelectItem>
                   ))}
