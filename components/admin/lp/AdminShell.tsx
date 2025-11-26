@@ -10,6 +10,7 @@ import { SectionTabs, type ActiveSection } from './SectionTabs';
 import { AboutSectionEditor } from './sections/AboutSectionEditor';
 import { BrandPhilosophySectionEditor } from './sections/BrandPhilosophySectionEditor';
 import { HeroSectionEditor } from './sections/HeroSectionEditor';
+import { PortfolioSectionEditor } from './sections/PortfolioSectionEditor';
 import { ServicesSectionEditor } from './sections/ServicesSectionEditor';
 
 type AdminShellProps = {
@@ -60,6 +61,7 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
       hero: 'Hero',
       about: 'About',
       services: 'Services',
+      portfolio: 'Portfolio',
       brandPhilosophy: 'Brand Philosophy',
     };
     return labels[section];
@@ -104,6 +106,15 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
               onChange={(services) => setContent((prev) => ({ ...prev, services }))}
               onSave={() => handleSave('services')}
               isSaving={isSaving('services')}
+            />
+          )}
+          {activeSection === 'portfolio' && (
+            <PortfolioSectionEditor
+              portfolio={content.portfolio}
+              services={content.services.items}
+              onChange={(portfolio) => setContent((prev) => ({ ...prev, portfolio }))}
+              onSave={() => handleSave('portfolio')}
+              isSaving={isSaving('portfolio')}
             />
           )}
           {activeSection === 'brandPhilosophy' && (

@@ -1,10 +1,10 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { Briefcase, Info, LayoutDashboard, Sparkles } from 'lucide-react';
+import { Briefcase, FolderOpen, Info, LayoutDashboard, Sparkles } from 'lucide-react';
 import type { JSX } from 'react';
 
-export type ActiveSection = 'hero' | 'about' | 'services' | 'brandPhilosophy';
+export type ActiveSection = 'hero' | 'about' | 'services' | 'portfolio' | 'brandPhilosophy';
 
 type SectionTabsProps = {
   activeSection: ActiveSection;
@@ -35,6 +35,11 @@ const sections: {
     id: 'services',
     label: 'Services',
     icon: Briefcase,
+  },
+  {
+    id: 'portfolio',
+    label: 'Portfolio',
+    icon: FolderOpen,
   },
 ];
 

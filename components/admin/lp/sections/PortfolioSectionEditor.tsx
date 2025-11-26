@@ -85,6 +85,15 @@ export function PortfolioSectionEditor({
   };
 
   const handleSaveItem = () => {
+    if (!formData.title?.trim()) {
+      alert('Title は必須です。');
+      return;
+    }
+    if (!formData.imageUrl?.trim()) {
+      alert('Image URL は必須です。');
+      return;
+    }
+
     if (editingItem) {
       // 編集
       const updatedItems = portfolio.items.map((item) =>
@@ -267,7 +276,7 @@ export function PortfolioSectionEditor({
             </div>
             <div className="space-y-2">
               <Label htmlFor="description" className="text-text-headings">
-                Description *
+                Description (任意)
               </Label>
               <Textarea
                 id="description"
@@ -276,6 +285,7 @@ export function PortfolioSectionEditor({
                 rows={4}
                 placeholder="プロジェクトの説明..."
               />
+              <p className="text-xs text-text-body/70">カード本文に表示されます。未入力でも可。</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="serviceId" className="text-text-headings">
@@ -316,6 +326,7 @@ export function PortfolioSectionEditor({
                 onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                 placeholder="https://..."
               />
+              <p className="text-xs text-text-body/70">カードのサムネイルに使用されます。</p>
               {formData.imageUrl && (
                 <div className="mt-2 w-32 h-32 relative rounded overflow-hidden border">
                   <Image src={formData.imageUrl} alt="Preview" fill className="object-cover" />
