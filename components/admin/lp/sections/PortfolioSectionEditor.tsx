@@ -13,6 +13,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -22,7 +29,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { generateRandomId } from '@/lib/utils';
-import type { PortfolioContent, PortfolioItem } from '@/types/landing';
+import type { PortfolioContent, PortfolioItem, ServiceItem } from '@/types/landing';
 import { Edit, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import type { JSX } from 'react';
@@ -30,6 +37,7 @@ import { useState } from 'react';
 
 type PortfolioSectionEditorProps = {
   portfolio: PortfolioContent;
+  services: ServiceItem[];
   onChange: (portfolio: PortfolioContent) => void;
   onSave: () => void;
   isSaving: boolean;
@@ -37,6 +45,7 @@ type PortfolioSectionEditorProps = {
 
 export function PortfolioSectionEditor({
   portfolio,
+  services,
   onChange,
   onSave,
   isSaving,
@@ -49,6 +58,7 @@ export function PortfolioSectionEditor({
     description: '',
     imageUrl: '',
     linkUrl: '',
+    serviceId: undefined,
   });
 
   const handleOpenDialog = (item?: PortfolioItem) => {
@@ -63,6 +73,7 @@ export function PortfolioSectionEditor({
         description: '',
         imageUrl: '',
         linkUrl: '',
+        serviceId: undefined,
       });
     }
     setIsDialogOpen(true);
@@ -160,6 +171,7 @@ export function PortfolioSectionEditor({
                 <TableRow>
                   <TableHead>Thumbnail</TableHead>
                   <TableHead>Title</TableHead>
+                  <TableHead>Service</TableHead>
                   <TableHead>Link URL</TableHead>
                   <TableHead>Sort Order</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -186,6 +198,11 @@ export function PortfolioSectionEditor({
                     </TableCell>
                     <TableCell className="font-medium text-text-headings">
                       {item.title || '-'}
+                    </TableCell>
+                    <TableCell className="text-sm text-text-body">
+                      {item.serviceId
+                        ? (services.find((service) => service.id === item.serviceId)?.title ?? '—')
+                        : '未紐付け'}
                     </TableCell>
                     <TableCell className="text-text-body">
                       {item.linkUrl ? (
@@ -259,6 +276,35 @@ export function PortfolioSectionEditor({
                 rows={4}
                 placeholder="プロジェクトの説明..."
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="serviceId" className="text-text-headings">
+                Related Service
+              </Label>
+              <Select
+                value={formData.serviceId ?? 'unassigned'}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    serviceId: value === 'unassigned' ? undefined : value,
+                  })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="未紐付け" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="unassigned">未紐付け</SelectItem>
+                  {services.map((service) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-text-body/70">
+                サービス詳細ページの「Works」に表示する場合、紐付けたいサービスを選択してください。
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="imageUrl" className="text-text-headings">

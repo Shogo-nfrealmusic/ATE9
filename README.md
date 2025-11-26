@@ -34,3 +34,9 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Service Detail Page
+
+- `/services/[slug]` で該当サービスが存在しない場合は 404 (Not Found) を返します。
+- 紐付く Portfolio が 0 件の場合はセクション内に "Coming soon" メッセージを表示します。
+- Supabase 側で `slug` や `service_id` が未入力の場合も同様の扱いになるため、Admin から正しく設定してください。

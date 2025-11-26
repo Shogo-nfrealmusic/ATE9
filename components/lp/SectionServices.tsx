@@ -9,6 +9,7 @@ import {
 } from '@/lib/motion/variants';
 import type { ServicesContent } from '@/types/landing';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import type { JSX } from 'react';
 
 type SectionServicesProps = {
@@ -46,50 +47,70 @@ export function SectionServices({ content }: SectionServicesProps): JSX.Element 
           whileInView="visible"
           viewport={viewportOnce}
         >
-          {content.items.map((item) => (
-            <motion.div
-              key={item.id}
-              className="group relative h-full overflow-hidden rounded-xl bg-ate9-gray"
-              variants={fadeInUp}
-              whileHover={hoverScale}
-            >
+          {content.items.map((item) => {
+            const card = (
               <motion.div
-                className="relative flex h-full flex-col gap-4 p-6 sm:p-8"
-                transition={motionTransition.fast}
-                whileHover={{ y: -4 }}
+                className="group relative h-full overflow-hidden rounded-xl bg-ate9-gray"
+                variants={fadeInUp}
+                whileHover={hoverScale}
               >
-                {/* ベースのダークグラデーション */}
-                <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/40 to-transparent" />
-                {/* ホバー時にブランドレッドがふわっと乗るレイヤー */}
-                <div className="pointer-events-none absolute inset-0 opacity-0 bg-linear-to-br from-ate9-red/40 via-transparent to-transparent mix-blend-screen transition-opacity duration-300 group-hover:opacity-100" />
-
-                <div className="relative z-10 flex flex-col gap-4">
-                  <h3 className="text-lg font-semibold tracking-[-0.01em] text-white transition-colors duration-300 group-hover:text-ate9-red-light">
-                    {item.title}
-                  </h3>
-
-                  {/* 下線アニメーション */}
-                  <motion.div
-                    className="w-8 h-px bg-ate9-red"
-                    initial={{ scaleX: 0, originX: 0 }}
-                    whileInView={{ scaleX: 1 }}
-                    viewport={viewportOnce}
-                    transition={{ delay: 0.2, ...motionTransition.fast }}
-                  />
-
-                  <p className="text-xs leading-relaxed text-white/80 sm:text-sm">
-                    {item.description}
-                  </p>
-                </div>
-
                 <motion.div
-                  className="pointer-events-none absolute inset-0 rounded-xl border-2 border-transparent"
-                  whileHover={{ borderColor: 'rgb(242, 66, 109)' }}
+                  className="relative flex h-full flex-col gap-4 p-6 sm:p-8"
                   transition={motionTransition.fast}
-                />
+                  whileHover={{ y: -4 }}
+                >
+                  {/* ベースのダークグラデーション */}
+                  <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/70 via-black/40 to-transparent" />
+                  {/* ホバー時にブランドレッドがふわっと乗るレイヤー */}
+                  <div className="pointer-events-none absolute inset-0 opacity-0 bg-linear-to-br from-ate9-red/40 via-transparent to-transparent mix-blend-screen transition-opacity duration-300 group-hover:opacity-100" />
+
+                  <div className="relative z-10 flex flex-col gap-4">
+                    <h3 className="text-lg font-semibold tracking-[-0.01em] text-white transition-colors duration-300 group-hover:text-ate9-red-light">
+                      {item.title}
+                    </h3>
+
+                    {/* 下線アニメーション */}
+                    <motion.div
+                      className="w-8 h-px bg-ate9-red"
+                      initial={{ scaleX: 0, originX: 0 }}
+                      whileInView={{ scaleX: 1 }}
+                      viewport={viewportOnce}
+                      transition={{ delay: 0.2, ...motionTransition.fast }}
+                    />
+
+                    <p className="text-xs leading-relaxed text-white/80 sm:text-sm">
+                      {item.description}
+                    </p>
+                  </div>
+
+                  <motion.div
+                    className="pointer-events-none absolute inset-0 rounded-xl border-2 border-transparent"
+                    whileHover={{ borderColor: 'rgb(242, 66, 109)' }}
+                    transition={motionTransition.fast}
+                  />
+                </motion.div>
               </motion.div>
-            </motion.div>
-          ))}
+            );
+
+            if (item.slug) {
+              return (
+                <Link
+                  key={item.id}
+                  href={`/services/${item.slug}`}
+                  className="group block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                  aria-label={`${item.title} の詳細を見る`}
+                >
+                  {card}
+                </Link>
+              );
+            }
+
+            return (
+              <div key={item.id} className="h-full">
+                {card}
+              </div>
+            );
+          })}
         </motion.div>
       </div>
     </section>
