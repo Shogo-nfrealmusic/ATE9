@@ -12,7 +12,6 @@ export function SiteHeader(): JSX.Element {
     { label: 'About', href: '#about' },
     { label: 'Philosophy', href: '#brand-philosophy' },
     { label: 'Services', href: '#services' },
-    { label: 'Portfolio', href: '#portfolio' },
   ];
 
   const handleSmoothScroll = (

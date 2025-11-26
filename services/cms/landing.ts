@@ -34,6 +34,7 @@ const FALLBACK_CONTENT: LandingContent = {
     items: [
       {
         id: 'creative-production',
+        slug: 'creative-production',
         title: 'Creative Production & Visual Design',
         description:
           'We are a full-service creative agency specializing in visual content, motion graphics, and interactive experiences for the digital age. Elevate your brand with our innovative solutions.',
@@ -49,6 +50,7 @@ const FALLBACK_CONTENT: LandingContent = {
       },
       {
         id: 'brand-strategy',
+        slug: 'brand-strategy',
         title: 'Brand Strategy & Identity',
         description:
           'We help businesses build strong, memorable brands that resonate with their target audience. From logo design to comprehensive brand guidelines, we create cohesive visual identities.',
@@ -59,6 +61,7 @@ const FALLBACK_CONTENT: LandingContent = {
       },
       {
         id: 'digital-experience',
+        slug: 'digital-experience',
         title: 'Digital Experience Design',
         description:
           'Creating intuitive and engaging digital experiences that users love. We combine user research, design thinking, and cutting-edge technology to deliver exceptional results.',
@@ -76,6 +79,7 @@ const FALLBACK_CONTENT: LandingContent = {
     items: [
       {
         id: 'fintech',
+        serviceId: 'creative-production',
         title: 'Fintech Platform',
         description: 'A comprehensive UI/UX redesign for a leading financial services provider.',
         imageUrl:
@@ -84,6 +88,7 @@ const FALLBACK_CONTENT: LandingContent = {
       },
       {
         id: 'ecommerce',
+        serviceId: 'digital-experience',
         title: 'E-commerce App',
         description: 'Developed a high-conversion mobile shopping experience from the ground up.',
         imageUrl:
@@ -92,6 +97,7 @@ const FALLBACK_CONTENT: LandingContent = {
       },
       {
         id: 'wellness',
+        serviceId: 'brand-strategy',
         title: 'Wellness Tracker',
         description:
           'Designed and built a mobile app for tracking fitness goals and mental well-being.',
@@ -101,6 +107,7 @@ const FALLBACK_CONTENT: LandingContent = {
       },
       {
         id: 'saas',
+        serviceId: 'digital-experience',
         title: 'SaaS Dashboard',
         description: 'An intuitive analytics dashboard for a B2B software-as-a-service company.',
         imageUrl:
@@ -209,6 +216,7 @@ type ServiceRow = {
 
 type ServiceItemRow = {
   id: string;
+  slug: string | null;
   title: string;
   description: string;
   background_color: string;
@@ -227,6 +235,7 @@ type PortfolioItemRow = {
   description: string;
   image_url: string;
   link_url: string | null;
+  service_id: string | null;
   sort_order: number;
 };
 
@@ -294,7 +303,7 @@ async function getServicesFromDb(): Promise<ServicesContent | null> {
       publicSupabase.from('lp_services').select('intro').eq('id', ROW_ID).single<ServiceRow>(),
       publicSupabase
         .from('lp_service_items')
-        .select('id, title, description, background_color, gallery, sort_order')
+        .select('id, slug, title, description, background_color, gallery, sort_order')
         .eq('services_id', ROW_ID)
         .order('sort_order', { ascending: true })
         .returns<ServiceItemRow[]>(),
@@ -309,6 +318,7 @@ async function getServicesFromDb(): Promise<ServicesContent | null> {
     items: items.map(
       (item): ServiceItem => ({
         id: item.id,
+        slug: item.slug ?? item.id,
         title: item.title,
         description: item.description,
         backgroundColor: item.background_color,
@@ -327,7 +337,7 @@ async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
       .single<PortfolioRow>(),
     publicSupabase
       .from('lp_portfolio_items')
-      .select('id, title, description, image_url, link_url, sort_order')
+      .select('id, title, description, image_url, link_url, service_id, sort_order')
       .eq('portfolio_id', ROW_ID)
       .order('sort_order', { ascending: true })
       .returns<PortfolioItemRow[]>(),
@@ -347,6 +357,7 @@ async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
         description: item.description,
         imageUrl: item.image_url,
         linkUrl: item.link_url ?? undefined,
+        serviceId: item.service_id ?? undefined,
       }),
     ),
   };

@@ -111,6 +111,7 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
           {activeSection === 'portfolio' && (
             <PortfolioSectionEditor
               portfolio={content.portfolio}
+              services={content.services.items}
               onChange={(portfolio) => setContent((prev) => ({ ...prev, portfolio }))}
               onSave={() => handleSave('portfolio')}
               isSaving={isSaving('portfolio')}

@@ -50,6 +50,8 @@ const colorOptions = [
   { value: ate9Colors.white, label: 'ATE9 White (#ffffff)' },
 ];
 
+const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 export function ServicesSectionEditor({
   services,
   onChange,
@@ -60,6 +62,7 @@ export function ServicesSectionEditor({
   const [editingItem, setEditingItem] = useState<ServiceItem | null>(null);
   const [formData, setFormData] = useState<ServiceItem>({
     id: '',
+    slug: '',
     title: '',
     description: '',
     backgroundColor: ate9Colors.redBright,
@@ -69,11 +72,12 @@ export function ServicesSectionEditor({
   const handleOpenDialog = (item?: ServiceItem) => {
     if (item) {
       setEditingItem(item);
-      setFormData(item);
+      setFormData({ ...item, slug: item.slug ?? '' });
     } else {
       setEditingItem(null);
       setFormData({
         id: generateRandomId(),
+        slug: '',
         title: '',
         description: '',
         backgroundColor: ate9Colors.redBright,
@@ -89,6 +93,16 @@ export function ServicesSectionEditor({
   };
 
   const handleSaveItem = () => {
+    if (!formData.slug || !slugRegex.test(formData.slug)) {
+      alert('Slug は英小文字とハイフンのみで入力してください。');
+      return;
+    }
+
+    if (!formData.title?.trim() || !formData.description?.trim()) {
+      alert('Title と Description は必須です。');
+      return;
+    }
+
     if (editingItem) {
       // 編集
       const updatedItems = services.items.map((item) =>
@@ -176,6 +190,7 @@ export function ServicesSectionEditor({
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Slug</TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>Background Color</TableHead>
                   <TableHead>Gallery</TableHead>
@@ -186,6 +201,9 @@ export function ServicesSectionEditor({
               <TableBody>
                 {services.items.map((item, index) => (
                   <TableRow key={item.id}>
+                    <TableCell className="font-mono text-xs text-text-body/80">
+                      {item.slug || '-'}
+                    </TableCell>
                     <TableCell className="font-medium text-text-headings">
                       {item.title || '-'}
                     </TableCell>
@@ -242,6 +260,34 @@ export function ServicesSectionEditor({
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Creative Direction"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="slug" className="text-text-headings">
+                Slug *
+              </Label>
+              <Input
+                id="slug"
+                value={formData.slug}
+                onChange={(e) => {
+                  const normalized = e.target.value
+                    .toLowerCase()
+                    .replace(/[^a-z0-9-]/g, '-')
+                    .replace(/--+/g, '-')
+                    .replace(/^-+/, '')
+                    .replace(/-+$/, '');
+                  setFormData({ ...formData, slug: normalized });
+                }}
+                placeholder="creative-production"
+              />
+              <p
+                className={`text-xs ${
+                  formData.slug && !slugRegex.test(formData.slug)
+                    ? 'text-ate9-red-light'
+                    : 'text-text-body/70'
+                }`}
+              >
+                英小文字とハイフンのみ。例: creative-production
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description" className="text-text-headings">

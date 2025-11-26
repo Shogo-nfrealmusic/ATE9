@@ -8,6 +8,11 @@ export type HeroContent = {
 
 export type ServiceItem = {
   id: string;
+  /**
+   * `/services/[slug]` で利用する一意な識別子。
+   * 英小文字とハイフンのみを推奨。
+   */
+  slug: string;
   title: string;
   description: string;
   backgroundColor: string;
@@ -28,6 +33,10 @@ export type PortfolioItem = {
    * 任意の外部サイトリンク。指定されていない場合は表示しない。
    */
   linkUrl?: string;
+  /**
+   * 関連するサービス ID（`ServiceItem.id`）。サービス詳細ページでフィルタリングに使用する。
+   */
+  serviceId?: string | null;
 };
 
 export type PortfolioContent = {
