@@ -54,7 +54,7 @@ export async function getServiceDetailBySlug(slug: string): Promise<ServiceDetai
     description: data.description,
     backgroundColor: data.background_color ?? '#090909',
     gallery: data.gallery ?? [],
-    longDescription: data.description,
+    longDescription: undefined,
   };
 }
 
@@ -82,7 +82,7 @@ export async function getPortfoliosByServiceId(serviceId: string): Promise<Servi
       description: item.description,
       imageUrl: item.image_url,
       linkUrl: item.link_url ?? undefined,
-      serviceId: item.service_id ?? undefined,
+      serviceId: item.service_id ?? null,
     }),
   );
 }

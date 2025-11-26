@@ -30,10 +30,11 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { generateRandomId } from '@/lib/utils';
 import type { PortfolioContent, PortfolioItem, ServiceItem } from '@/types/landing';
-import { Edit, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Edit, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import type { JSX } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 type PortfolioSectionEditorProps = {
   portfolio: PortfolioContent;
@@ -58,13 +59,16 @@ export function PortfolioSectionEditor({
     description: '',
     imageUrl: '',
     linkUrl: '',
-    serviceId: undefined,
+    serviceId: null,
   });
+  const validServiceIds = useMemo(() => new Set(services.map((service) => service.id)), [services]);
+  const ensureValidServiceId = (value: string | null | undefined): string | null =>
+    value && validServiceIds.has(value) ? value : null;
 
   const handleOpenDialog = (item?: PortfolioItem) => {
     if (item) {
       setEditingItem(item);
-      setFormData(item);
+      setFormData({ ...item, serviceId: ensureValidServiceId(item.serviceId ?? null) });
     } else {
       setEditingItem(null);
       setFormData({
@@ -73,7 +77,7 @@ export function PortfolioSectionEditor({
         description: '',
         imageUrl: '',
         linkUrl: '',
-        serviceId: undefined,
+        serviceId: null,
       });
     }
     setIsDialogOpen(true);
@@ -85,15 +89,35 @@ export function PortfolioSectionEditor({
   };
 
   const handleSaveItem = () => {
+    const current = { ...formData };
+    const trimmedTitle = current.title.trim();
+    const trimmedImage = current.imageUrl.trim();
+    if (!trimmedTitle) {
+      toast.error('Title は必須です。');
+      return;
+    }
+    if (!trimmedImage) {
+      toast.error('Image URL は必須です。');
+      return;
+    }
+
+    const normalizedItem: PortfolioItem = {
+      ...current,
+      title: trimmedTitle,
+      imageUrl: trimmedImage,
+      description: current.description?.trim() ?? '',
+      linkUrl: current.linkUrl?.trim() || undefined,
+      serviceId: ensureValidServiceId(current.serviceId ?? null),
+    };
     if (editingItem) {
       // 編集
       const updatedItems = portfolio.items.map((item) =>
-        item.id === editingItem.id ? formData : item,
+        item.id === editingItem.id ? normalizedItem : item,
       );
       onChange({ ...portfolio, items: updatedItems });
     } else {
       // 新規追加
-      onChange({ ...portfolio, items: [...portfolio.items, formData] });
+      onChange({ ...portfolio, items: [...portfolio.items, normalizedItem] });
     }
     handleCloseDialog();
   };
@@ -105,6 +129,18 @@ export function PortfolioSectionEditor({
         items: portfolio.items.filter((item) => item.id !== id),
       });
     }
+  };
+
+  const handleReorder = (index: number, direction: 'up' | 'down') => {
+    const newItems = [...portfolio.items];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newItems.length) {
+      return;
+    }
+    const temp = newItems[targetIndex];
+    newItems[targetIndex] = newItems[index];
+    newItems[index] = temp;
+    onChange({ ...portfolio, items: newItems });
   };
 
   return (
@@ -174,6 +210,7 @@ export function PortfolioSectionEditor({
                   <TableHead>Service</TableHead>
                   <TableHead>Link URL</TableHead>
                   <TableHead>Sort Order</TableHead>
+                  <TableHead>Order</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -200,9 +237,12 @@ export function PortfolioSectionEditor({
                       {item.title || '-'}
                     </TableCell>
                     <TableCell className="text-sm text-text-body">
-                      {item.serviceId
-                        ? (services.find((service) => service.id === item.serviceId)?.title ?? '—')
-                        : '未紐付け'}
+                      {(() => {
+                        const serviceId = ensureValidServiceId(item.serviceId ?? null);
+                        return serviceId
+                          ? (services.find((service) => service.id === serviceId)?.title ?? '—')
+                          : '未紐付け';
+                      })()}
                     </TableCell>
                     <TableCell className="text-text-body">
                       {item.linkUrl ? (
@@ -220,6 +260,32 @@ export function PortfolioSectionEditor({
                       )}
                     </TableCell>
                     <TableCell className="text-text-body">{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2 text-black">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleReorder(index, 'up')}
+                          disabled={index === 0}
+                          aria-label="Move up"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleReorder(index, 'down')}
+                          disabled={index === portfolio.items.length - 1}
+                          aria-label="Move down"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right text-text-body">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(item)}>
@@ -267,7 +333,7 @@ export function PortfolioSectionEditor({
             </div>
             <div className="space-y-2">
               <Label htmlFor="description" className="text-text-headings">
-                Description *
+                Description (任意)
               </Label>
               <Textarea
                 id="description"
@@ -276,24 +342,25 @@ export function PortfolioSectionEditor({
                 rows={4}
                 placeholder="プロジェクトの説明..."
               />
+              <p className="text-xs text-text-body/70">カード本文に表示されます。未入力でも可。</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="serviceId" className="text-text-headings">
                 Related Service
               </Label>
               <Select
-                value={formData.serviceId ?? 'unassigned'}
+                value={ensureValidServiceId(formData.serviceId ?? null) ?? 'unassigned'}
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    serviceId: value === 'unassigned' ? undefined : value,
+                    serviceId: value === 'unassigned' ? null : value,
                   })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="未紐付け" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border border-ate9-gray/20 bg-white text-black">
                   <SelectItem value="unassigned">未紐付け</SelectItem>
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>
@@ -316,6 +383,7 @@ export function PortfolioSectionEditor({
                 onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
                 placeholder="https://..."
               />
+              <p className="text-xs text-text-body/70">カードのサムネイルに使用されます。</p>
               {formData.imageUrl && (
                 <div className="mt-2 w-32 h-32 relative rounded overflow-hidden border">
                   <Image src={formData.imageUrl} alt="Preview" fill className="object-cover" />

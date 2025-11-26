@@ -31,9 +31,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { ate9Colors } from '@/config/theme';
 import { generateRandomId } from '@/lib/utils';
 import type { ServiceItem, ServicesContent } from '@/types/landing';
-import { Edit, Plus, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Edit, Plus, Trash2, X } from 'lucide-react';
 import type { JSX } from 'react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 type ServicesSectionEditorProps = {
   services: ServicesContent;
@@ -93,25 +94,36 @@ export function ServicesSectionEditor({
   };
 
   const handleSaveItem = () => {
-    if (!formData.slug || !slugRegex.test(formData.slug)) {
-      alert('Slug は英小文字とハイフンのみで入力してください。');
+    const slug = formData.slug.trim();
+    if (!slug || !slugRegex.test(slug)) {
+      toast.error('Slug は英小文字とハイフンのみで入力してください。');
+      return;
+    }
+    if (!formData.title?.trim()) {
+      toast.error('Title は必須です。');
+      return;
+    }
+    if (!formData.description?.trim()) {
+      toast.error('Description は必須です。');
       return;
     }
 
-    if (!formData.title?.trim() || !formData.description?.trim()) {
-      alert('Title と Description は必須です。');
-      return;
-    }
+    const normalizedItem: ServiceItem = {
+      ...formData,
+      slug,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+    };
 
     if (editingItem) {
       // 編集
       const updatedItems = services.items.map((item) =>
-        item.id === editingItem.id ? formData : item,
+        item.id === editingItem.id ? normalizedItem : item,
       );
       onChange({ ...services, items: updatedItems });
     } else {
       // 新規追加
-      onChange({ ...services, items: [...services.items, formData] });
+      onChange({ ...services, items: [...services.items, normalizedItem] });
     }
     handleCloseDialog();
   };
@@ -138,6 +150,18 @@ export function ServicesSectionEditor({
   const handleRemoveGalleryUrl = (index: number) => {
     const newGallery = formData.gallery.filter((_, i) => i !== index);
     setFormData({ ...formData, gallery: newGallery });
+  };
+
+  const handleReorder = (index: number, direction: 'up' | 'down') => {
+    const newItems = [...services.items];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newItems.length) {
+      return;
+    }
+    const temp = newItems[targetIndex];
+    newItems[targetIndex] = newItems[index];
+    newItems[index] = temp;
+    onChange({ ...services, items: newItems });
   };
 
   return (
@@ -195,6 +219,7 @@ export function ServicesSectionEditor({
                   <TableHead>Background Color</TableHead>
                   <TableHead>Gallery</TableHead>
                   <TableHead>Sort Order</TableHead>
+                  <TableHead>Order</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -218,6 +243,32 @@ export function ServicesSectionEditor({
                     </TableCell>
                     <TableCell className="text-text-body">{item.gallery.length} 枚</TableCell>
                     <TableCell className="text-text-body">{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2 text-black">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleReorder(index, 'up')}
+                          disabled={index === 0}
+                          aria-label="Move up"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleReorder(index, 'down')}
+                          disabled={index === services.items.length - 1}
+                          aria-label="Move down"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right text-text-body">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(item)}>

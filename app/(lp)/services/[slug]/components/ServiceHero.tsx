@@ -13,7 +13,10 @@ export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Elemen
     backgroundImage: `radial-gradient(circle at top, ${service.backgroundColor} 0%, rgba(0,0,0,0.65) 45%, rgba(0,0,0,0.95) 100%)`,
   };
 
-  const highlights = extractHighlights(service.longDescription ?? service.description);
+  const highlights =
+    service.longDescription && service.longDescription.trim().length > 0
+      ? extractHighlights(service.longDescription)
+      : [];
   const gallery = service.gallery.slice(0, 4);
 
   return (
