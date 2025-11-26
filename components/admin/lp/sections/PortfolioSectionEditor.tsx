@@ -33,7 +33,8 @@ import type { PortfolioContent, PortfolioItem, ServiceItem } from '@/types/landi
 import { ArrowDown, ArrowUp, Edit, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import type { JSX } from 'react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 type PortfolioSectionEditorProps = {
   portfolio: PortfolioContent;
@@ -58,13 +59,16 @@ export function PortfolioSectionEditor({
     description: '',
     imageUrl: '',
     linkUrl: '',
-    serviceId: undefined,
+    serviceId: null,
   });
+  const validServiceIds = useMemo(() => new Set(services.map((service) => service.id)), [services]);
+  const ensureValidServiceId = (value: string | null | undefined): string | null =>
+    value && validServiceIds.has(value) ? value : null;
 
   const handleOpenDialog = (item?: PortfolioItem) => {
     if (item) {
       setEditingItem(item);
-      setFormData(item);
+      setFormData({ ...item, serviceId: ensureValidServiceId(item.serviceId ?? null) });
     } else {
       setEditingItem(null);
       setFormData({
@@ -73,7 +77,7 @@ export function PortfolioSectionEditor({
         description: '',
         imageUrl: '',
         linkUrl: '',
-        serviceId: undefined,
+        serviceId: null,
       });
     }
     setIsDialogOpen(true);
@@ -85,24 +89,35 @@ export function PortfolioSectionEditor({
   };
 
   const handleSaveItem = () => {
-    if (!formData.title?.trim()) {
-      alert('Title は必須です。');
+    const current = { ...formData };
+    const trimmedTitle = current.title.trim();
+    const trimmedImage = current.imageUrl.trim();
+    if (!trimmedTitle) {
+      toast.error('Title は必須です。');
       return;
     }
-    if (!formData.imageUrl?.trim()) {
-      alert('Image URL は必須です。');
+    if (!trimmedImage) {
+      toast.error('Image URL は必須です。');
       return;
     }
 
+    const normalizedItem: PortfolioItem = {
+      ...current,
+      title: trimmedTitle,
+      imageUrl: trimmedImage,
+      description: current.description?.trim() ?? '',
+      linkUrl: current.linkUrl?.trim() || undefined,
+      serviceId: ensureValidServiceId(current.serviceId ?? null),
+    };
     if (editingItem) {
       // 編集
       const updatedItems = portfolio.items.map((item) =>
-        item.id === editingItem.id ? formData : item,
+        item.id === editingItem.id ? normalizedItem : item,
       );
       onChange({ ...portfolio, items: updatedItems });
     } else {
       // 新規追加
-      onChange({ ...portfolio, items: [...portfolio.items, formData] });
+      onChange({ ...portfolio, items: [...portfolio.items, normalizedItem] });
     }
     handleCloseDialog();
   };
@@ -222,9 +237,12 @@ export function PortfolioSectionEditor({
                       {item.title || '-'}
                     </TableCell>
                     <TableCell className="text-sm text-text-body">
-                      {item.serviceId
-                        ? (services.find((service) => service.id === item.serviceId)?.title ?? '—')
-                        : '未紐付け'}
+                      {(() => {
+                        const serviceId = ensureValidServiceId(item.serviceId ?? null);
+                        return serviceId
+                          ? (services.find((service) => service.id === serviceId)?.title ?? '—')
+                          : '未紐付け';
+                      })()}
                     </TableCell>
                     <TableCell className="text-text-body">
                       {item.linkUrl ? (
@@ -331,11 +349,11 @@ export function PortfolioSectionEditor({
                 Related Service
               </Label>
               <Select
-                value={formData.serviceId ?? 'unassigned'}
+                value={ensureValidServiceId(formData.serviceId ?? null) ?? 'unassigned'}
                 onValueChange={(value) =>
                   setFormData({
                     ...formData,
-                    serviceId: value === 'unassigned' ? undefined : value,
+                    serviceId: value === 'unassigned' ? null : value,
                   })
                 }
               >

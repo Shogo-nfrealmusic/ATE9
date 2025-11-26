@@ -357,7 +357,7 @@ async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
         description: item.description,
         imageUrl: item.image_url,
         linkUrl: item.link_url ?? undefined,
-        serviceId: item.service_id ?? undefined,
+        serviceId: item.service_id ?? null,
       }),
     ),
   };
@@ -460,7 +460,8 @@ async function saveServicesToDb(
   });
 
   if (error) {
-    throw new Error(error.message);
+    console.error('[saveServicesToDb] upsert_lp_services failed', error, { services });
+    throw new Error(`services: ${error.message}`);
   }
 }
 
@@ -478,7 +479,8 @@ async function savePortfolioToDb(
   });
 
   if (error) {
-    throw new Error(error.message);
+    console.error('[savePortfolioToDb] upsert_lp_portfolio failed', error, { portfolio });
+    throw new Error(`portfolio: ${error.message}`);
   }
 }
 
@@ -492,7 +494,7 @@ function normalizePortfolioForServices(
     ...portfolio,
     items: portfolio.items.map((item) => ({
       ...item,
-      serviceId: item.serviceId && validServiceIds.has(item.serviceId) ? item.serviceId : undefined,
+      serviceId: item.serviceId && validServiceIds.has(item.serviceId) ? item.serviceId : null,
     })),
   };
 }

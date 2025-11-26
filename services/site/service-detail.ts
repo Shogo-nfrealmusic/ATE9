@@ -82,7 +82,7 @@ export async function getPortfoliosByServiceId(serviceId: string): Promise<Servi
       description: item.description,
       imageUrl: item.image_url,
       linkUrl: item.link_url ?? undefined,
-      serviceId: item.service_id ?? undefined,
+      serviceId: item.service_id ?? null,
     }),
   );
 }

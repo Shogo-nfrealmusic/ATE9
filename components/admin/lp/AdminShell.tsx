@@ -19,21 +19,28 @@ type AdminShellProps = {
 
 export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
   const [content, setContent] = useState(initialContent);
-  const contentRef = useRef(content);
+  const contentRef = useRef(initialContent);
   const [activeSection, setActiveSection] = useState<ActiveSection>('hero');
   const [savingSection, setSavingSection] = useState<ActiveSection | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  // contentが更新されたら、refも更新する
-  useEffect(() => {
-    contentRef.current = content;
-  }, [content]);
-
   // initialContentが変更されたときにローカルステートを更新
   useEffect(() => {
     setContent(initialContent);
+    contentRef.current = initialContent;
   }, [initialContent]);
+
+  const updateContent = (updater: LandingContent | ((prev: LandingContent) => LandingContent)) => {
+    setContent((prev) => {
+      const next =
+        typeof updater === 'function'
+          ? (updater as (value: LandingContent) => LandingContent)(prev)
+          : updater;
+      contentRef.current = next;
+      return next;
+    });
+  };
 
   const handleSave = (section: ActiveSection) => {
     setSavingSection(section);
@@ -87,7 +94,7 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
           {activeSection === 'hero' && (
             <HeroSectionEditor
               hero={content.hero}
-              onChange={(hero) => setContent((prev) => ({ ...prev, hero }))}
+              onChange={(hero) => updateContent((prev) => ({ ...prev, hero }))}
               onSave={() => handleSave('hero')}
               isSaving={isSaving('hero')}
             />
@@ -95,7 +102,7 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
           {activeSection === 'about' && (
             <AboutSectionEditor
               about={content.about}
-              onChange={(about) => setContent((prev) => ({ ...prev, about }))}
+              onChange={(about) => updateContent((prev) => ({ ...prev, about }))}
               onSave={() => handleSave('about')}
               isSaving={isSaving('about')}
             />
@@ -103,7 +110,7 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
           {activeSection === 'services' && (
             <ServicesSectionEditor
               services={content.services}
-              onChange={(services) => setContent((prev) => ({ ...prev, services }))}
+              onChange={(services) => updateContent((prev) => ({ ...prev, services }))}
               onSave={() => handleSave('services')}
               isSaving={isSaving('services')}
             />
@@ -112,7 +119,7 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
             <PortfolioSectionEditor
               portfolio={content.portfolio}
               services={content.services.items}
-              onChange={(portfolio) => setContent((prev) => ({ ...prev, portfolio }))}
+              onChange={(portfolio) => updateContent((prev) => ({ ...prev, portfolio }))}
               onSave={() => handleSave('portfolio')}
               isSaving={isSaving('portfolio')}
             />
@@ -120,7 +127,9 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
           {activeSection === 'brandPhilosophy' && (
             <BrandPhilosophySectionEditor
               brandPhilosophy={content.brandPhilosophy}
-              onChange={(brandPhilosophy) => setContent((prev) => ({ ...prev, brandPhilosophy }))}
+              onChange={(brandPhilosophy) =>
+                updateContent((prev) => ({ ...prev, brandPhilosophy }))
+              }
               onSave={() => handleSave('brandPhilosophy')}
               isSaving={isSaving('brandPhilosophy')}
             />

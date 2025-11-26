@@ -36,7 +36,7 @@ export type PortfolioItem = {
   /**
    * 関連するサービス ID（`ServiceItem.id`）。サービス詳細ページでフィルタリングに使用する。
    */
-  serviceId?: string | null;
+  serviceId: string | null;
 };
 
 export type PortfolioContent = {

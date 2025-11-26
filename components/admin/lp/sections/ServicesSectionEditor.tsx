@@ -34,6 +34,7 @@ import type { ServiceItem, ServicesContent } from '@/types/landing';
 import { ArrowDown, ArrowUp, Edit, Plus, Trash2, X } from 'lucide-react';
 import type { JSX } from 'react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 type ServicesSectionEditorProps = {
   services: ServicesContent;
@@ -93,25 +94,36 @@ export function ServicesSectionEditor({
   };
 
   const handleSaveItem = () => {
-    if (!formData.slug || !slugRegex.test(formData.slug)) {
-      alert('Slug は英小文字とハイフンのみで入力してください。');
+    const slug = formData.slug.trim();
+    if (!slug || !slugRegex.test(slug)) {
+      toast.error('Slug は英小文字とハイフンのみで入力してください。');
+      return;
+    }
+    if (!formData.title?.trim()) {
+      toast.error('Title は必須です。');
+      return;
+    }
+    if (!formData.description?.trim()) {
+      toast.error('Description は必須です。');
       return;
     }
 
-    if (!formData.title?.trim() || !formData.description?.trim()) {
-      alert('Title と Description は必須です。');
-      return;
-    }
+    const normalizedItem: ServiceItem = {
+      ...formData,
+      slug,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+    };
 
     if (editingItem) {
       // 編集
       const updatedItems = services.items.map((item) =>
-        item.id === editingItem.id ? formData : item,
+        item.id === editingItem.id ? normalizedItem : item,
       );
       onChange({ ...services, items: updatedItems });
     } else {
       // 新規追加
-      onChange({ ...services, items: [...services.items, formData] });
+      onChange({ ...services, items: [...services.items, normalizedItem] });
     }
     handleCloseDialog();
   };
