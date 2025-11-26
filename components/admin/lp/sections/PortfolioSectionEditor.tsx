@@ -30,7 +30,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { generateRandomId } from '@/lib/utils';
 import type { PortfolioContent, PortfolioItem, ServiceItem } from '@/types/landing';
-import { Edit, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Edit, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import type { JSX } from 'react';
 import { useState } from 'react';
@@ -116,6 +116,18 @@ export function PortfolioSectionEditor({
     }
   };
 
+  const handleReorder = (index: number, direction: 'up' | 'down') => {
+    const newItems = [...portfolio.items];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newItems.length) {
+      return;
+    }
+    const temp = newItems[targetIndex];
+    newItems[targetIndex] = newItems[index];
+    newItems[index] = temp;
+    onChange({ ...portfolio, items: newItems });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -183,6 +195,7 @@ export function PortfolioSectionEditor({
                   <TableHead>Service</TableHead>
                   <TableHead>Link URL</TableHead>
                   <TableHead>Sort Order</TableHead>
+                  <TableHead>Order</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -229,6 +242,32 @@ export function PortfolioSectionEditor({
                       )}
                     </TableCell>
                     <TableCell className="text-text-body">{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2 text-black">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleReorder(index, 'up')}
+                          disabled={index === 0}
+                          aria-label="Move up"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleReorder(index, 'down')}
+                          disabled={index === portfolio.items.length - 1}
+                          aria-label="Move down"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right text-text-body">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(item)}>
@@ -303,7 +342,7 @@ export function PortfolioSectionEditor({
                 <SelectTrigger>
                   <SelectValue placeholder="未紐付け" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border border-ate9-gray/20 bg-white text-black">
                   <SelectItem value="unassigned">未紐付け</SelectItem>
                   {services.map((service) => (
                     <SelectItem key={service.id} value={service.id}>

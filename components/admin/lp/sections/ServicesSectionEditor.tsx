@@ -31,7 +31,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ate9Colors } from '@/config/theme';
 import { generateRandomId } from '@/lib/utils';
 import type { ServiceItem, ServicesContent } from '@/types/landing';
-import { Edit, Plus, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Edit, Plus, Trash2, X } from 'lucide-react';
 import type { JSX } from 'react';
 import { useState } from 'react';
 
@@ -140,6 +140,18 @@ export function ServicesSectionEditor({
     setFormData({ ...formData, gallery: newGallery });
   };
 
+  const handleReorder = (index: number, direction: 'up' | 'down') => {
+    const newItems = [...services.items];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= newItems.length) {
+      return;
+    }
+    const temp = newItems[targetIndex];
+    newItems[targetIndex] = newItems[index];
+    newItems[index] = temp;
+    onChange({ ...services, items: newItems });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -195,6 +207,7 @@ export function ServicesSectionEditor({
                   <TableHead>Background Color</TableHead>
                   <TableHead>Gallery</TableHead>
                   <TableHead>Sort Order</TableHead>
+                  <TableHead>Order</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -218,6 +231,32 @@ export function ServicesSectionEditor({
                     </TableCell>
                     <TableCell className="text-text-body">{item.gallery.length} 枚</TableCell>
                     <TableCell className="text-text-body">{index + 1}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2 text-black">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleReorder(index, 'up')}
+                          disabled={index === 0}
+                          aria-label="Move up"
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleReorder(index, 'down')}
+                          disabled={index === services.items.length - 1}
+                          aria-label="Move down"
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-right text-text-body">
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(item)}>

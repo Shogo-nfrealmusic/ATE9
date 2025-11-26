@@ -482,6 +482,21 @@ async function savePortfolioToDb(
   }
 }
 
+function normalizePortfolioForServices(
+  portfolio: PortfolioContent,
+  services: ServiceItem[],
+): PortfolioContent {
+  const validServiceIds = new Set(services.map((service) => service.id));
+
+  return {
+    ...portfolio,
+    items: portfolio.items.map((item) => ({
+      ...item,
+      serviceId: item.serviceId && validServiceIds.has(item.serviceId) ? item.serviceId : undefined,
+    })),
+  };
+}
+
 type SaveLandingContentParams = {
   supabase: SupabaseClient;
   content: LandingContent;
@@ -491,12 +506,21 @@ export async function saveLandingContent({
   supabase,
   content,
 }: SaveLandingContentParams): Promise<LandingContent> {
-  await saveLpContentSections(supabase, content);
+  const normalizedPortfolio = normalizePortfolioForServices(
+    content.portfolio,
+    content.services.items,
+  );
+  const normalizedContent: LandingContent = {
+    ...content,
+    portfolio: normalizedPortfolio,
+  };
+
+  await saveLpContentSections(supabase, normalizedContent);
 
   const results = await Promise.allSettled([
-    saveHeroToDb(supabase, content.hero),
-    saveServicesToDb(supabase, content.services),
-    savePortfolioToDb(supabase, content.portfolio),
+    saveHeroToDb(supabase, normalizedContent.hero),
+    saveServicesToDb(supabase, normalizedContent.services),
+    savePortfolioToDb(supabase, normalizedPortfolio),
   ]);
 
   const rejected = results.find((result) => result.status === 'rejected');
@@ -504,7 +528,7 @@ export async function saveLandingContent({
     throw rejected.reason instanceof Error ? rejected.reason : new Error(String(rejected.reason));
   }
 
-  return content;
+  return normalizedContent;
 }
 
 export { FALLBACK_CONTENT as DEFAULT_LANDING_CONTENT };
