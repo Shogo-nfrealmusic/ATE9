@@ -30,17 +30,20 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ate9Colors } from '@/config/theme';
 import { generateRandomId } from '@/lib/utils';
-import type { ServiceItem, ServicesContent } from '@/types/landing';
+import type { PortfolioItem, ServiceItem, ServicesContent } from '@/types/landing';
 import { ArrowDown, ArrowUp, Edit, Plus, Trash2, X } from 'lucide-react';
 import type { JSX } from 'react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import type { ManageWorksTarget } from '../types';
 
 type ServicesSectionEditorProps = {
   services: ServicesContent;
+  portfolioItems: PortfolioItem[];
   onChange: (services: ServicesContent) => void;
   onSave: () => void;
   isSaving: boolean;
+  onManageWorks: (target: ManageWorksTarget) => void;
 };
 
 const colorOptions = [
@@ -55,9 +58,11 @@ const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 export function ServicesSectionEditor({
   services,
+  portfolioItems,
   onChange,
   onSave,
   isSaving,
+  onManageWorks,
 }: ServicesSectionEditorProps): JSX.Element {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ServiceItem | null>(null);
@@ -164,11 +169,16 @@ export function ServicesSectionEditor({
     onChange({ ...services, items: newItems });
   };
 
+  const getWorksCount = (serviceId: string | null) =>
+    portfolioItems.filter((item) => (item.serviceId ?? null) === (serviceId ?? null)).length;
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-white">Services セクション</h2>
-        <p className="text-sm text-white/70 mt-1">サービス紹介のテキストとカード一覧を編集します</p>
+        <h2 className="text-2xl font-semibold text-text-headings">Services セクション</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          サービス紹介のテキストとカード一覧を編集します
+        </p>
       </div>
 
       {/* イントロ編集 */}
@@ -188,7 +198,7 @@ export function ServicesSectionEditor({
               onChange={(e) => onChange({ ...services, intro: e.target.value })}
               rows={3}
             />
-            <p className="text-xs text-text-body/70">{services.intro.length} 文字</p>
+            <p className="text-xs text-muted-foreground">{services.intro.length} 文字</p>
           </div>
         </CardContent>
       </Card>
@@ -211,13 +221,14 @@ export function ServicesSectionEditor({
               サービスが登録されていません。「Add Service」ボタンで追加してください。
             </p>
           ) : (
-            <Table>
+            <Table className="text-text-body">
               <TableHeader>
                 <TableRow>
                   <TableHead>Slug</TableHead>
                   <TableHead>Title</TableHead>
                   <TableHead>Background Color</TableHead>
                   <TableHead>Gallery</TableHead>
+                  <TableHead>Works</TableHead>
                   <TableHead>Sort Order</TableHead>
                   <TableHead>Order</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -226,7 +237,7 @@ export function ServicesSectionEditor({
               <TableBody>
                 {services.items.map((item, index) => (
                   <TableRow key={item.id}>
-                    <TableCell className="font-mono text-xs text-black">
+                    <TableCell className="font-mono text-xs text-text-body">
                       {item.slug || '-'}
                     </TableCell>
                     <TableCell className="font-medium text-text-headings">
@@ -242,9 +253,27 @@ export function ServicesSectionEditor({
                       </div>
                     </TableCell>
                     <TableCell className="text-text-body">{item.gallery.length} 枚</TableCell>
+                    <TableCell className="text-text-body">
+                      <div className="flex items-center justify-between gap-2">
+                        <span>{getWorksCount(item.id)} 件</span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            onManageWorks({
+                              serviceId: item.id,
+                              serviceTitle: `${item.title} Works`,
+                              serviceSlug: item.slug || undefined,
+                            })
+                          }
+                        >
+                          Works管理
+                        </Button>
+                      </div>
+                    </TableCell>
                     <TableCell className="text-text-body">{index + 1}</TableCell>
                     <TableCell>
-                      <div className="flex gap-2 text-black">
+                      <div className="flex gap-2 text-text-body">
                         <Button
                           type="button"
                           variant="outline"
@@ -287,6 +316,33 @@ export function ServicesSectionEditor({
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>未紐付けの Works</CardTitle>
+            <CardDescription>
+              どのサービスにも属していないポートフォリオカードを管理します。
+            </CardDescription>
+          </div>
+          <Button
+            variant="outline"
+            onClick={() =>
+              onManageWorks({
+                serviceId: null,
+                serviceTitle: '未紐付け Works',
+              })
+            }
+          >
+            Works管理
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-text-body">
+            現在 {getWorksCount(null)} 件のカードが未紐付けです。
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="flex justify-end">
         <Button onClick={onSave} disabled={isSaving} size="lg">
           {isSaving ? '保存中...' : 'すべて保存'}
@@ -310,7 +366,6 @@ export function ServicesSectionEditor({
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Creative Direction"
-                className="bg-black/70 border-white/30 text-white placeholder:text-white/40 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               />
             </div>
             <div className="space-y-2">
@@ -330,7 +385,6 @@ export function ServicesSectionEditor({
                   setFormData({ ...formData, slug: normalized });
                 }}
                 placeholder="creative-production"
-                className="bg-black/70 border-white/30 text-white placeholder:text-white/40 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               />
               <p
                 className={`text-xs ${
@@ -362,16 +416,12 @@ export function ServicesSectionEditor({
                 value={formData.backgroundColor}
                 onValueChange={(value) => setFormData({ ...formData, backgroundColor: value })}
               >
-                <SelectTrigger className="h-12 rounded-lg border-white/30 bg-black/70 text-white focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black">
+                <SelectTrigger className="h-12">
                   <SelectValue placeholder="Select color" />
                 </SelectTrigger>
-                <SelectContent className="border-white/20 bg-black/90 text-white">
+                <SelectContent>
                   {colorOptions.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                      className="text-white focus:bg-ate9-red/20 focus:text-white"
-                    >
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
