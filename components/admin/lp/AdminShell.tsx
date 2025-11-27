@@ -1,20 +1,56 @@
 'use client';
 
 import { saveLandingContentAction } from '@/app/actions/landing';
-import type { LandingContent } from '@/types/landing';
+import type { LandingContent, PortfolioItem } from '@/types/landing';
 import { useRouter } from 'next/navigation';
 import type { JSX } from 'react';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import { SectionTabs, type ActiveSection } from './SectionTabs';
 import { AboutSectionEditor } from './sections/AboutSectionEditor';
 import { BrandPhilosophySectionEditor } from './sections/BrandPhilosophySectionEditor';
 import { HeroSectionEditor } from './sections/HeroSectionEditor';
 import { PortfolioSectionEditor } from './sections/PortfolioSectionEditor';
+import { ServiceWorksDialog } from './sections/ServiceWorksDialog';
 import { ServicesSectionEditor } from './sections/ServicesSectionEditor';
+import type { ManageWorksTarget } from './types';
 
 type AdminShellProps = {
   initialContent: LandingContent;
+};
+
+const normalizeServiceKey = (value: string | null | undefined) => value ?? null;
+
+const replaceItemsForService = (
+  items: PortfolioItem[],
+  serviceId: string | null,
+  nextItems: PortfolioItem[],
+): PortfolioItem[] => {
+  const target = normalizeServiceKey(serviceId);
+  const normalizedNext = nextItems.map((item) => ({
+    ...item,
+    serviceId: target,
+  }));
+
+  const result: PortfolioItem[] = [];
+  let inserted = false;
+
+  for (const item of items) {
+    if (normalizeServiceKey(item.serviceId) === target) {
+      if (!inserted) {
+        result.push(...normalizedNext);
+        inserted = true;
+      }
+      continue;
+    }
+    result.push(item);
+  }
+
+  if (!inserted && normalizedNext.length > 0) {
+    result.push(...normalizedNext);
+  }
+
+  return result;
 };
 
 export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
@@ -23,6 +59,7 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
   const [activeSection, setActiveSection] = useState<ActiveSection>('hero');
   const [savingSection, setSavingSection] = useState<ActiveSection | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [worksDialogTarget, setWorksDialogTarget] = useState<ManageWorksTarget | null>(null);
   const router = useRouter();
 
   // initialContentが変更されたときにローカルステートを更新
@@ -40,6 +77,32 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
       contentRef.current = next;
       return next;
     });
+  };
+
+  const openWorksDialogForService = (target: ManageWorksTarget) => {
+    setWorksDialogTarget(target);
+  };
+
+  const closeWorksDialog = () => setWorksDialogTarget(null);
+
+  const worksDialogItems = useMemo(() => {
+    if (!worksDialogTarget) {
+      return [];
+    }
+    const targetKey = normalizeServiceKey(worksDialogTarget.serviceId);
+    return content.portfolio.items.filter(
+      (item) => normalizeServiceKey(item.serviceId) === targetKey,
+    );
+  }, [content.portfolio.items, worksDialogTarget]);
+
+  const handleWorksSaved = (params: { serviceId: string | null; items: PortfolioItem[] }) => {
+    updateContent((prev) => ({
+      ...prev,
+      portfolio: {
+        ...prev.portfolio,
+        items: replaceItemsForService(prev.portfolio.items, params.serviceId, params.items),
+      },
+    }));
   };
 
   const handleSave = (section: ActiveSection) => {
@@ -78,9 +141,9 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
     savingSection === section || (section !== null && isPending);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-ate9-bg text-white">
+    <div className="flex h-screen overflow-hidden bg-ate9-bg text-text-body">
       {/* 左サイドバー */}
-      <div className="w-64 border-r border-ate9-gray/60 bg-ate9-bg">
+      <div className="w-64 border-r border-ate9-gray/60 bg-ate9-bg text-white">
         <div className="p-6 border-b border-ate9-gray/60">
           <h1 className="text-xl font-semibold tracking-tight">LP Admin</h1>
           <p className="text-sm text-white/60 mt-1">Landing Page 編集</p>
@@ -110,9 +173,11 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
           {activeSection === 'services' && (
             <ServicesSectionEditor
               services={content.services}
+              portfolioItems={content.portfolio.items}
               onChange={(services) => updateContent((prev) => ({ ...prev, services }))}
               onSave={() => handleSave('services')}
               isSaving={isSaving('services')}
+              onManageWorks={openWorksDialogForService}
             />
           )}
           {activeSection === 'portfolio' && (
@@ -122,6 +187,7 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
               onChange={(portfolio) => updateContent((prev) => ({ ...prev, portfolio }))}
               onSave={() => handleSave('portfolio')}
               isSaving={isSaving('portfolio')}
+              onManageWorks={openWorksDialogForService}
             />
           )}
           {activeSection === 'brandPhilosophy' && (
@@ -136,6 +202,17 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
           )}
         </div>
       </div>
+      {worksDialogTarget && (
+        <ServiceWorksDialog
+          open={Boolean(worksDialogTarget)}
+          serviceId={worksDialogTarget.serviceId}
+          serviceTitle={worksDialogTarget.serviceTitle}
+          serviceSlug={worksDialogTarget.serviceSlug}
+          items={worksDialogItems}
+          onItemsSaved={handleWorksSaved}
+          onClose={closeWorksDialog}
+        />
+      )}
     </div>
   );
 }

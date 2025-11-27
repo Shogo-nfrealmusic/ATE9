@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* ATE9 LP カラーパレット（新デザイン用） */
 @theme {
@@ -12,7 +12,7 @@
 /* Tailwind v4 の theme 相当は一旦未使用のため、単純なユーティリティクラスとして定義 */
 @layer utilities {
   .bg-background-light {
-    background-color: #FFFFFF;
+    background-color: #ffffff;
   }
   .bg-background-dark {
     background-color: #020617;
@@ -21,10 +21,10 @@
     background-color: rgba(255, 255, 255, 0.8);
   }
   .bg-section-pastel {
-    background-color: #F0F5FF;
+    background-color: #f0f5ff;
   }
   .bg-section-light {
-    background-color: #F7F7F7;
+    background-color: #f7f7f7;
   }
   .text-text-headings {
     color: #222222;
@@ -47,6 +47,46 @@
 :root {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* shadcn 基本トークン (dark theme を ATE9 カラーに寄せたもの) */
+  --background: #050608;
+  --foreground: #f9fafb;
+
+  --card: #111111;
+  --card-foreground: #f9fafb;
+
+  --popover: #111111;
+  --popover-foreground: #f9fafb;
+
+  --muted: #111827;
+  --muted-foreground: #9ca3af;
+
+  --accent: #f97316;
+  --accent-foreground: #111827;
+
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #f97316;
+
+  --primary: #ff0303;
+  --primary-foreground: #fef2f2;
+
+  --secondary: #1f2933;
+  --secondary-foreground: #e5e7eb;
+
+  --destructive: #b91c1c;
+  --destructive-foreground: #fef2f2;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+  }
 }
 
 body {

@@ -1,8 +1,8 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/client';
-import { saveLandingContent } from '@/services/cms/landing';
-import type { LandingContent } from '@/types/landing';
+import { saveLandingContent, savePortfolioItemsForService } from '@/services/cms/landing';
+import type { LandingContent, PortfolioItem } from '@/types/landing';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -22,6 +22,35 @@ export async function saveLandingContentAction(content: LandingContent): Promise
     return saved;
   } catch (error) {
     console.error('[saveLandingContentAction] failed', error);
+    throw error;
+  }
+}
+
+type SavePortfolioItemsForServiceActionParams = {
+  serviceId: string | null;
+  serviceSlug?: string;
+  items: PortfolioItem[];
+};
+
+export async function savePortfolioItemsForServiceAction({
+  serviceId,
+  serviceSlug,
+  items,
+}: SavePortfolioItemsForServiceActionParams): Promise<PortfolioItem[]> {
+  const supabase = createServerSupabaseClient();
+
+  try {
+    const saved = await savePortfolioItemsForService({ supabase, serviceId, items });
+
+    revalidatePath('/', 'page');
+    if (serviceSlug) {
+      revalidatePath(`/services/${serviceSlug}`, 'page');
+    }
+    revalidatePath('/admin/dashboard', 'page');
+
+    return saved;
+  } catch (error) {
+    console.error('[savePortfolioItemsForServiceAction] failed', error, { serviceId, serviceSlug });
     throw error;
   }
 }

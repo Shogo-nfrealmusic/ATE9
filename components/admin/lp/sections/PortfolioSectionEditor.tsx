@@ -2,39 +2,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Textarea } from '@/components/ui/textarea';
-import { generateRandomId } from '@/lib/utils';
-import type { PortfolioContent, PortfolioItem, ServiceItem } from '@/types/landing';
-import { ArrowDown, ArrowUp, Edit, ExternalLink, Plus, Trash2 } from 'lucide-react';
-import Image from 'next/image';
+import type { PortfolioContent, ServiceItem } from '@/types/landing';
 import type { JSX } from 'react';
-import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import type { ManageWorksTarget } from '../types';
 
 type PortfolioSectionEditorProps = {
   portfolio: PortfolioContent;
@@ -42,7 +14,10 @@ type PortfolioSectionEditorProps = {
   onChange: (portfolio: PortfolioContent) => void;
   onSave: () => void;
   isSaving: boolean;
+  onManageWorks: (target: ManageWorksTarget) => void;
 };
+
+const normalizeServiceKey = (value: string | null | undefined) => value ?? null;
 
 export function PortfolioSectionEditor({
   portfolio,
@@ -50,131 +25,49 @@ export function PortfolioSectionEditor({
   onChange,
   onSave,
   isSaving,
+  onManageWorks,
 }: PortfolioSectionEditorProps): JSX.Element {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
-  const [formData, setFormData] = useState<PortfolioItem>({
-    id: '',
-    title: '',
-    description: '',
-    imageUrl: '',
-    linkUrl: '',
-    serviceId: null,
-  });
-  const validServiceIds = useMemo(() => new Set(services.map((service) => service.id)), [services]);
-  const ensureValidServiceId = (value: string | null | undefined): string | null =>
-    value && validServiceIds.has(value) ? value : null;
-
-  const handleOpenDialog = (item?: PortfolioItem) => {
-    if (item) {
-      setEditingItem(item);
-      setFormData({ ...item, serviceId: ensureValidServiceId(item.serviceId ?? null) });
-    } else {
-      setEditingItem(null);
-      setFormData({
-        id: generateRandomId(),
-        title: '',
-        description: '',
-        imageUrl: '',
-        linkUrl: '',
-        serviceId: null,
-      });
-    }
-    setIsDialogOpen(true);
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setEditingItem(null);
-  };
-
-  const handleSaveItem = () => {
-    const current = { ...formData };
-    const trimmedTitle = current.title.trim();
-    const trimmedImage = current.imageUrl.trim();
-    if (!trimmedTitle) {
-      toast.error('Title は必須です。');
-      return;
-    }
-    if (!trimmedImage) {
-      toast.error('Image URL は必須です。');
-      return;
-    }
-
-    const normalizedItem: PortfolioItem = {
-      ...current,
-      title: trimmedTitle,
-      imageUrl: trimmedImage,
-      description: current.description?.trim() ?? '',
-      linkUrl: current.linkUrl?.trim() || undefined,
-      serviceId: ensureValidServiceId(current.serviceId ?? null),
-    };
-    if (editingItem) {
-      // 編集
-      const updatedItems = portfolio.items.map((item) =>
-        item.id === editingItem.id ? normalizedItem : item,
-      );
-      onChange({ ...portfolio, items: updatedItems });
-    } else {
-      // 新規追加
-      onChange({ ...portfolio, items: [...portfolio.items, normalizedItem] });
-    }
-    handleCloseDialog();
-  };
-
-  const handleDeleteItem = (id: string) => {
-    if (confirm('このポートフォリオを削除しますか？')) {
-      onChange({
-        ...portfolio,
-        items: portfolio.items.filter((item) => item.id !== id),
-      });
-    }
-  };
-
-  const handleReorder = (index: number, direction: 'up' | 'down') => {
-    const newItems = [...portfolio.items];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= newItems.length) {
-      return;
-    }
-    const temp = newItems[targetIndex];
-    newItems[targetIndex] = newItems[index];
-    newItems[index] = temp;
-    onChange({ ...portfolio, items: newItems });
-  };
+  const totalItems = portfolio.items.length;
+  const getWorksCount = (serviceId: string | null) =>
+    portfolio.items.filter(
+      (item) => normalizeServiceKey(item.serviceId) === normalizeServiceKey(serviceId),
+    ).length;
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold text-white">Portfolio セクション</h2>
-        <p className="text-sm text-white/70 mt-1">実績セクションの案件一覧を編集します</p>
+        <h2 className="text-2xl font-semibold text-text-headings">Portfolio セクション</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          見出し編集と、サービスごとの Works 管理に進むためのハブです。
+        </p>
       </div>
 
-      {/* セクション見出し編集 */}
       <Card>
         <CardHeader>
           <CardTitle>セクション見出し</CardTitle>
-          <CardDescription>Portfolio セクションの見出しとサブコピーを編集します</CardDescription>
+          <CardDescription>
+            LP 「Portfolio」セクションの見出しとサブコピーを編集します。
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="heading" className="text-text-headings">
+              <Label htmlFor="portfolio-heading" className="text-text-headings">
                 Heading
               </Label>
               <Input
-                id="heading"
+                id="portfolio-heading"
                 value={portfolio.heading}
                 onChange={(e) => onChange({ ...portfolio, heading: e.target.value })}
-                placeholder="Portfolio"
+                placeholder="Our Portfolio"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="subheading" className="text-text-headings">
+              <Label htmlFor="portfolio-subheading" className="text-text-headings">
                 Subheading
               </Label>
               <Input
-                id="subheading"
+                id="portfolio-subheading"
                 value={portfolio.subheading}
                 onChange={(e) => onChange({ ...portfolio, subheading: e.target.value })}
                 placeholder="実績一覧"
@@ -184,232 +77,73 @@ export function PortfolioSectionEditor({
         </CardContent>
       </Card>
 
-      {/* ポートフォリオ一覧テーブル */}
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle>ポートフォリオ一覧</CardTitle>
-            <CardDescription>ポートフォリオカードの一覧を管理します</CardDescription>
-          </div>
-          <Button onClick={() => handleOpenDialog()}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Portfolio
-          </Button>
+        <CardHeader>
+          <CardTitle>サービス別 Works 管理</CardTitle>
+          <CardDescription>
+            各サービスの Works は個別に保存され、他サービスの紐づけや sort_order には影響しません。
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {portfolio.items.length === 0 ? (
-            <p className="text-sm text-text-body text-center py-8">
-              ポートフォリオが登録されていません。「Add Portfolio」ボタンで追加してください。
+          <div className="rounded-lg border border-border bg-card p-4">
+            <p className="text-sm text-text-body">
+              現在 {totalItems} 件のポートフォリオカードがあります。カードの並び順は
+              <span className="font-semibold"> 「サービス × sort_order」</span>{' '}
+              単位で再計算されます。
             </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Thumbnail</TableHead>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Service</TableHead>
-                  <TableHead>Link URL</TableHead>
-                  <TableHead>Sort Order</TableHead>
-                  <TableHead>Order</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {portfolio.items.map((item, index) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      {item.imageUrl ? (
-                        <div className="w-16 h-16 relative rounded overflow-hidden">
-                          <Image
-                            src={item.imageUrl}
-                            alt={item.title}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-text-body/70">
-                          No Image
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="font-medium text-text-headings">
-                      {item.title || '-'}
-                    </TableCell>
-                    <TableCell className="text-sm text-text-body">
-                      {(() => {
-                        const serviceId = ensureValidServiceId(item.serviceId ?? null);
-                        return serviceId
-                          ? (services.find((service) => service.id === serviceId)?.title ?? '—')
-                          : '未紐付け';
-                      })()}
-                    </TableCell>
-                    <TableCell className="text-text-body">
-                      {item.linkUrl ? (
-                        <a
-                          href={item.linkUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-blue-600 hover:underline"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                          <span className="text-xs">Open</span>
-                        </a>
-                      ) : (
-                        <span className="text-xs text-text-body">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-text-body">{index + 1}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2 text-black">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleReorder(index, 'up')}
-                          disabled={index === 0}
-                          aria-label="Move up"
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleReorder(index, 'down')}
-                          disabled={index === portfolio.items.length - 1}
-                          aria-label="Move down"
-                        >
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right text-text-body">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => handleOpenDialog(item)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteItem(item.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-2">
+            {services.map((service) => (
+              <div
+                key={service.id}
+                className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
+              >
+                <div>
+                  <p className="text-lg font-semibold text-text-headings">{service.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    紐づく Works: {getWorksCount(service.id)} 件
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    onManageWorks({
+                      serviceId: service.id,
+                      serviceTitle: `${service.title} Works`,
+                      serviceSlug: service.slug || undefined,
+                    })
+                  }
+                >
+                  Works を管理
+                </Button>
+              </div>
+            ))}
+            <div className="flex items-center justify-between rounded-lg border border-dashed border-border bg-muted p-4">
+              <div>
+                <p className="text-lg font-semibold text-text-headings">未紐付け Works</p>
+                <p className="text-sm text-muted-foreground">現在 {getWorksCount(null)} 件</p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() =>
+                  onManageWorks({
+                    serviceId: null,
+                    serviceTitle: '未紐付け Works',
+                  })
+                }
+              >
+                Works を管理
+              </Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
       <div className="flex justify-end">
         <Button onClick={onSave} disabled={isSaving} size="lg">
-          {isSaving ? '保存中...' : 'すべて保存'}
+          {isSaving ? '保存中...' : '見出しを保存'}
         </Button>
       </div>
-
-      {/* 編集モーダル */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingItem ? 'ポートフォリオを編集' : '新しいポートフォリオを追加'}
-            </DialogTitle>
-            <DialogDescription>ポートフォリオカードの情報を入力してください</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-text-headings">
-                Title *
-              </Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Project Alpha"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-text-headings">
-                Description (任意)
-              </Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-                placeholder="プロジェクトの説明..."
-              />
-              <p className="text-xs text-text-body/70">カード本文に表示されます。未入力でも可。</p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="serviceId" className="text-text-headings">
-                Related Service
-              </Label>
-              <Select
-                value={ensureValidServiceId(formData.serviceId ?? null) ?? 'unassigned'}
-                onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    serviceId: value === 'unassigned' ? null : value,
-                  })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="未紐付け" />
-                </SelectTrigger>
-                <SelectContent className="border border-ate9-gray/20 bg-white text-black">
-                  <SelectItem value="unassigned">未紐付け</SelectItem>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {service.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-text-body/70">
-                サービス詳細ページの「Works」に表示する場合、紐付けたいサービスを選択してください。
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="imageUrl" className="text-text-headings">
-                Image URL *
-              </Label>
-              <Input
-                id="imageUrl"
-                value={formData.imageUrl}
-                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                placeholder="https://..."
-              />
-              <p className="text-xs text-text-body/70">カードのサムネイルに使用されます。</p>
-              {formData.imageUrl && (
-                <div className="mt-2 w-32 h-32 relative rounded overflow-hidden border">
-                  <Image src={formData.imageUrl} alt="Preview" fill className="object-cover" />
-                </div>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="linkUrl" className="text-text-headings">
-                Link URL (任意)
-              </Label>
-              <Input
-                id="linkUrl"
-                value={formData.linkUrl || ''}
-                onChange={(e) => setFormData({ ...formData, linkUrl: e.target.value || undefined })}
-                placeholder="https://example.com"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={handleCloseDialog}>
-              キャンセル
-            </Button>
-            <Button onClick={handleSaveItem}>保存</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

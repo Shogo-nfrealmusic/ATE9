@@ -339,6 +339,7 @@ async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
       .from('lp_portfolio_items')
       .select('id, title, description, image_url, link_url, service_id, sort_order')
       .eq('portfolio_id', ROW_ID)
+      .order('service_id', { ascending: true, nullsFirst: true })
       .order('sort_order', { ascending: true })
       .returns<PortfolioItemRow[]>(),
   ]);
@@ -465,23 +466,77 @@ async function saveServicesToDb(
   }
 }
 
-async function savePortfolioToDb(
+async function savePortfolioMetadataToDb(
   supabase: SupabaseClient,
-  portfolio: PortfolioContent,
+  portfolio: Pick<PortfolioContent, 'heading' | 'subheading'>,
 ): Promise<void> {
-  const { error } = await supabase.rpc('upsert_lp_portfolio', {
-    p_portfolio: {
+  const { error } = await supabase.from('lp_portfolio').upsert(
+    {
       id: ROW_ID,
       heading: portfolio.heading,
       subheading: portfolio.subheading,
-      items: portfolio.items,
+      updated_at: new Date().toISOString(),
     },
+    { onConflict: 'id' },
+  );
+
+  if (error) {
+    console.error('[savePortfolioMetadataToDb] failed', error, { portfolio });
+    throw new Error(`portfolio-meta: ${error.message}`);
+  }
+}
+
+type SavePortfolioItemsForServiceParams = {
+  supabase: SupabaseClient;
+  serviceId: string | null;
+  items: PortfolioItem[];
+};
+
+export async function savePortfolioItemsForService({
+  supabase,
+  serviceId,
+  items,
+}: SavePortfolioItemsForServiceParams): Promise<PortfolioItem[]> {
+  const normalizedItems: PortfolioItem[] = items.map((item) => {
+    const normalizedTitle = item.title.trim();
+    const normalizedImage = item.imageUrl.trim();
+
+    if (!normalizedTitle) {
+      throw new Error('title is required');
+    }
+    if (!normalizedImage) {
+      throw new Error('imageUrl is required');
+    }
+
+    return {
+      ...item,
+      id: item.id?.trim() || item.id,
+      title: normalizedTitle,
+      description: item.description?.trim() ?? '',
+      imageUrl: normalizedImage,
+      linkUrl: item.linkUrl?.trim() || undefined,
+      serviceId: serviceId ?? null,
+    };
+  });
+
+  const { error } = await supabase.rpc('upsert_lp_portfolio_for_service', {
+    p_portfolio_id: ROW_ID,
+    p_service_id: serviceId,
+    p_items: normalizedItems.map((item) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      imageUrl: item.imageUrl,
+      linkUrl: item.linkUrl ?? null,
+    })),
   });
 
   if (error) {
-    console.error('[savePortfolioToDb] upsert_lp_portfolio failed', error, { portfolio });
-    throw new Error(`portfolio: ${error.message}`);
+    console.error('[savePortfolioItemsForService] failed', error, { serviceId });
+    throw new Error(`portfolio-items: ${error.message}`);
   }
+
+  return normalizedItems;
 }
 
 function normalizePortfolioForServices(
@@ -522,7 +577,10 @@ export async function saveLandingContent({
   const results = await Promise.allSettled([
     saveHeroToDb(supabase, normalizedContent.hero),
     saveServicesToDb(supabase, normalizedContent.services),
-    savePortfolioToDb(supabase, normalizedPortfolio),
+    savePortfolioMetadataToDb(supabase, {
+      heading: normalizedPortfolio.heading,
+      subheading: normalizedPortfolio.subheading,
+    }),
   ]);
 
   const rejected = results.find((result) => result.status === 'rejected');
