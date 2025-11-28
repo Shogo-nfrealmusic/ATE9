@@ -255,11 +255,11 @@ export function ServiceWorksDialog({
         delete next[item.id];
         return next;
       });
+      onPortfolioRelinked?.({ itemId: item.id, targetServiceId });
       onItemsSaved({
         serviceId: normalizedServiceId,
         items: nextItems,
       });
-      onPortfolioRelinked?.({ itemId: item.id, targetServiceId });
       toast.success(`${item.title} を ${targetService.title} に紐づけました`);
     } catch (error) {
       toast.error('紐づけに失敗しました', {

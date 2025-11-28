@@ -1,6 +1,6 @@
-import { DEFAULT_BLUR_DATA_URL, getOptimizedImageUrl } from '@/lib/images';
+/* eslint-disable @next/next/no-img-element -- Supabase render/image delivers optimized assets for LP surfaces without relying on Next/Image. */
+import { buildRenderImageUrl, buildRenderSrcSet } from '@/lib/images';
 import type { ServiceDetail } from '@/services/site/service-detail';
-import Image from 'next/image';
 import type { JSX } from 'react';
 
 /**
@@ -9,6 +9,9 @@ import type { JSX } from 'react';
  * - props:
  *   - service: API から取得したサービス詳細 (`ServiceDetail`)
  */
+const PRIMARY_WIDTHS = [960, 1440, 1920];
+const SECONDARY_WIDTHS = [480, 640, 960];
+
 export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Element {
   const gradientStyle = {
     backgroundImage: `radial-gradient(circle at top, ${service.backgroundColor} 0%, rgba(0,0,0,0.65) 45%, rgba(0,0,0,0.95) 100%)`,
@@ -45,32 +48,34 @@ export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Elemen
 
         {primaryImage && (
           <div className="grid flex-1 grid-cols-2 gap-4">
-            <div className="relative col-span-2 aspect-4/3 overflow-hidden rounded-xl border border-white/10 bg-black/40 sm:col-span-1 sm:aspect-4/5">
-              <Image
-                src={getOptimizedImageUrl(primaryImage, 'full') || primaryImage}
-                alt={`${service.title} hero`}
-                fill
-                priority
+            <div className="relative col-span-2 aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-black/40 sm:col-span-1 sm:aspect-[4/5]">
+              <img
+                src={
+                  buildRenderImageUrl(primaryImage, { width: 1600, quality: 80 }) || primaryImage
+                }
+                srcSet={buildRenderSrcSet(primaryImage, PRIMARY_WIDTHS, { quality: 80 })}
                 sizes="(max-width: 1024px) 50vw, 25vw"
-                placeholder="blur"
-                blurDataURL={DEFAULT_BLUR_DATA_URL}
-                className="object-cover"
+                alt={`${service.title} hero`}
+                loading="eager"
+                decoding="async"
+                className="h-full w-full object-cover object-center"
+                draggable={false}
               />
             </div>
             {secondaryImages.map((url, index) => (
               <div
                 key={`${url}-${index}`}
-                className="relative aspect-4/5 overflow-hidden rounded-xl border border-white/10 bg-black/40"
+                className="relative aspect-[4/5] overflow-hidden rounded-xl border border-white/10 bg-black/40"
               >
-                <Image
-                  src={getOptimizedImageUrl(url, 'medium') || url}
-                  alt={`${service.title} visual ${index + 2}`}
-                  fill
-                  loading="lazy"
+                <img
+                  src={buildRenderImageUrl(url, { width: 800, quality: 70 }) || url}
+                  srcSet={buildRenderSrcSet(url, SECONDARY_WIDTHS, { quality: 70 })}
                   sizes="(max-width: 1024px) 50vw, 25vw"
-                  placeholder="blur"
-                  blurDataURL={DEFAULT_BLUR_DATA_URL}
-                  className="object-cover"
+                  alt={`${service.title} visual ${index + 2}`}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover object-center"
+                  draggable={false}
                 />
               </div>
             ))}

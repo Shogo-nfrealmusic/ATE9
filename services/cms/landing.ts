@@ -10,7 +10,6 @@ import type {
   ServicesContent,
 } from '@/types/landing';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { cache } from 'react';
 
 const ROW_ID = 'default';
 const serverSupabase = createServerSupabaseClient();
@@ -365,7 +364,7 @@ async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
   };
 }
 
-export const getLandingContent = cache(async (): Promise<LandingContent> => {
+export async function getLandingContent(): Promise<LandingContent> {
   const [hero, about, services, portfolio, brandPhilosophy] = await Promise.all([
     getHeroFromDb(),
     getAboutFromDb(),
@@ -381,7 +380,7 @@ export const getLandingContent = cache(async (): Promise<LandingContent> => {
     portfolio: portfolio ?? FALLBACK_CONTENT.portfolio,
     brandPhilosophy: brandPhilosophy ?? FALLBACK_CONTENT.brandPhilosophy,
   };
-});
+}
 
 function mergeLpContentSections(
   currentContent: ContentRow['content'] | null | undefined,

@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/client';
 import type { PortfolioItem, ServiceItem } from '@/types/landing';
-import { cache } from 'react';
+import type { PostgrestError } from '@supabase/supabase-js';
 
 const serverSupabase = createServerSupabaseClient();
 
@@ -32,7 +32,37 @@ type PortfolioRow = {
   sort_order: number;
 };
 
-export const getServiceDetailBySlug = cache(async (slug: string): Promise<ServiceDetail | null> => {
+function isNetworkError(error: unknown): boolean {
+  if (!error) {
+    return false;
+  }
+
+  const message =
+    typeof error === 'string'
+      ? error
+      : typeof error === 'object' && error !== null && 'message' in error
+        ? String((error as { message?: unknown }).message ?? '')
+        : '';
+
+  if (!message) {
+    return false;
+  }
+
+  const normalized = message.toLowerCase();
+  return (
+    normalized.includes('fetch failed') ||
+    normalized.includes('failed to fetch') ||
+    normalized.includes('econnreset') ||
+    normalized.includes('network')
+  );
+}
+
+function wrapNetworkError(error: PostgrestError | Error, slug: string): Error {
+  const base = error instanceof Error ? error : new Error(error.message);
+  return new Error(`Failed to load service detail for slug "${slug}"`, { cause: base });
+}
+
+export async function getServiceDetailBySlug(slug: string): Promise<ServiceDetail | null> {
   const { data, error } = await serverSupabase
     .from('lp_service_items')
     .select('id, slug, title, description, background_color, gallery')
@@ -40,7 +70,12 @@ export const getServiceDetailBySlug = cache(async (slug: string): Promise<Servic
     .maybeSingle<ServiceDetailRow>();
 
   if (error) {
-    console.error('[getServiceDetailBySlug] failed', error);
+    console.error('[getServiceDetailBySlug] failed', { slug, error });
+
+    if (isNetworkError(error)) {
+      throw wrapNetworkError(error, slug);
+    }
+
     return null;
   }
 
@@ -57,35 +92,33 @@ export const getServiceDetailBySlug = cache(async (slug: string): Promise<Servic
     gallery: data.gallery ?? [],
     longDescription: undefined,
   };
-});
+}
 
-export const getPortfoliosByServiceId = cache(
-  async (serviceId: string): Promise<ServicePortfolioItem[]> => {
-    const { data, error } = await serverSupabase
-      .from('lp_portfolio_items')
-      .select('id, title, description, image_url, link_url, service_id, sort_order')
-      .eq('service_id', serviceId)
-      .order('sort_order', { ascending: true })
-      .returns<PortfolioRow[]>();
+export async function getPortfoliosByServiceId(serviceId: string): Promise<ServicePortfolioItem[]> {
+  const { data, error } = await serverSupabase
+    .from('lp_portfolio_items')
+    .select('id, title, description, image_url, link_url, service_id, sort_order')
+    .eq('service_id', serviceId)
+    .order('sort_order', { ascending: true })
+    .returns<PortfolioRow[]>();
 
-    if (error) {
-      console.error('[getPortfoliosByServiceId] failed', error);
-      return [];
-    }
+  if (error) {
+    console.error('[getPortfoliosByServiceId] failed', { serviceId, error });
+    throw error;
+  }
 
-    if (!data) {
-      return [];
-    }
+  if (!data) {
+    return [];
+  }
 
-    return data.map(
-      (item): ServicePortfolioItem => ({
-        id: item.id,
-        title: item.title,
-        description: item.description,
-        imageUrl: item.image_url,
-        linkUrl: item.link_url ?? undefined,
-        serviceId: item.service_id ?? null,
-      }),
-    );
-  },
-);
+  return data.map(
+    (item): ServicePortfolioItem => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      imageUrl: item.image_url,
+      linkUrl: item.link_url ?? undefined,
+      serviceId: item.service_id ?? null,
+    }),
+  );
+}
