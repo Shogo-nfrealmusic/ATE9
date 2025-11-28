@@ -1,6 +1,3 @@
-const STORAGE_OBJECT_PATH = '/storage/v1/object/';
-const STORAGE_RENDER_PATH = '/storage/v1/render/image/';
-
 export const IMAGE_FALLBACK_PIXEL =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 
@@ -13,10 +10,6 @@ function safeParseUrl(value: string | undefined): URL | null {
   } catch {
     return null;
   }
-}
-
-function getSupabaseBaseUrl(): URL | null {
-  return safeParseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 }
 
 function normalizeSrc(src?: string | null): string | null {
@@ -36,88 +29,51 @@ function isSupabaseRelativePath(src: string): boolean {
   return normalized.startsWith('storage/');
 }
 
-function toRenderEndpoint(url: URL): URL {
-  const next = new URL(url.toString());
-
-  if (next.pathname.startsWith(STORAGE_RENDER_PATH)) {
-    return next;
-  }
-
-  if (next.pathname.startsWith(STORAGE_OBJECT_PATH)) {
-    const objectPath = next.pathname.slice(STORAGE_OBJECT_PATH.length);
-    next.pathname = `${STORAGE_RENDER_PATH}${objectPath}`;
-  }
-
-  return next;
-}
-
+/**
+ * 画像 URL をそのまま返す（変換なし）
+ * Supabase の render API は使わず、元の URL をそのまま使用
+ */
 export function buildRenderImageUrl(
   src?: string | null,
-  options?: { width?: number; quality?: number },
+  _options?: { width?: number; quality?: number },
 ): string | null {
   const normalized = normalizeSrc(src);
   if (!normalized) {
     return null;
   }
 
-  let url: URL | null = null;
-
+  // 絶対 URL の場合はそのまま返す
   if (isAbsoluteUrl(normalized)) {
-    try {
-      url = new URL(normalized);
-    } catch {
-      return normalized;
-    }
-  } else if (isSupabaseRelativePath(normalized)) {
-    const baseUrl = getSupabaseBaseUrl();
+    return normalized;
+  }
+
+  // Supabase 相対パスの場合は絶対 URL に変換
+  if (isSupabaseRelativePath(normalized)) {
+    const baseUrl = safeParseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
     if (!baseUrl) {
-      return normalized;
+      // build 時に env が undefined の場合は null を返す
+      // 呼び出し側で元の URL にフォールバックする
+      return null;
     }
     try {
-      url = new URL(normalized.startsWith('/') ? normalized : `/${normalized}`, baseUrl);
+      const url = new URL(normalized.startsWith('/') ? normalized : `/${normalized}`, baseUrl);
+      return url.toString();
     } catch {
-      return normalized;
+      return null;
     }
-  } else {
-    return normalized;
   }
 
-  if (!url) {
-    return normalized;
-  }
-
-  const supabaseBaseUrl = getSupabaseBaseUrl();
-  if (supabaseBaseUrl && url.origin === supabaseBaseUrl.origin) {
-    url = toRenderEndpoint(url);
-  }
-
-  if (options?.width) {
-    url.searchParams.set('width', String(options.width));
-  }
-  if (options?.quality) {
-    url.searchParams.set('quality', String(options.quality));
-  }
-
-  return url.toString();
+  // その他の相対パス（/images/... など）はそのまま返す
+  return normalized;
 }
 
+/**
+ * srcSet は使わない（画像をそのまま配信するため）
+ */
 export function buildRenderSrcSet(
-  src: string | null | undefined,
-  widths: number[],
-  options?: { quality?: number },
+  _src: string | null | undefined,
+  _widths: number[],
+  _options?: { quality?: number },
 ): string | undefined {
-  const normalized = normalizeSrc(src);
-  if (!normalized || widths.length === 0) {
-    return undefined;
-  }
-
-  const parts: string[] = [];
-  for (const width of widths) {
-    const url = buildRenderImageUrl(normalized, { width, quality: options?.quality });
-    if (url) {
-      parts.push(`${url} ${width}w`);
-    }
-  }
-
-  return parts.length > 0 ? parts.join(', ') : undefined;
+  return undefined;
 }
