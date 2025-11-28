@@ -12,7 +12,6 @@ import type {
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const ROW_ID = 'default';
-const serverSupabase = createServerSupabaseClient();
 
 const FALLBACK_CONTENT: LandingContent = {
   hero: {
@@ -247,7 +246,8 @@ type ContentRow = {
 };
 
 async function getAboutFromDb(): Promise<AboutContent | null> {
-  const { data, error } = await serverSupabase
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
     .from('lp_content')
     .select('content')
     .eq('id', ROW_ID)
@@ -264,7 +264,8 @@ async function getAboutFromDb(): Promise<AboutContent | null> {
 }
 
 async function getBrandPhilosophyFromDb(): Promise<BrandPhilosophyContent | null> {
-  const { data, error } = await serverSupabase
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
     .from('lp_content')
     .select('content')
     .eq('id', ROW_ID)
@@ -278,7 +279,8 @@ async function getBrandPhilosophyFromDb(): Promise<BrandPhilosophyContent | null
 }
 
 async function getHeroFromDb(): Promise<HeroContent | null> {
-  const { data, error } = await serverSupabase
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
     .from('lp_hero')
     .select('heading, subheading, cta_label, cta_link, image_url')
     .eq('id', ROW_ID)
@@ -298,10 +300,11 @@ async function getHeroFromDb(): Promise<HeroContent | null> {
 }
 
 async function getServicesFromDb(): Promise<ServicesContent | null> {
+  const supabase = createServerSupabaseClient();
   const [{ data: serviceRow, error: servicesError }, { data: items, error: itemsError }] =
     await Promise.all([
-      serverSupabase.from('lp_services').select('intro').eq('id', ROW_ID).single<ServiceRow>(),
-      serverSupabase
+      supabase.from('lp_services').select('intro').eq('id', ROW_ID).single<ServiceRow>(),
+      supabase
         .from('lp_service_items')
         .select('id, slug, title, description, background_color, gallery, sort_order')
         .eq('services_id', ROW_ID)
@@ -329,13 +332,14 @@ async function getServicesFromDb(): Promise<ServicesContent | null> {
 }
 
 async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
+  const supabase = createServerSupabaseClient();
   const [{ data: meta, error: metaError }, { data: items, error: itemsError }] = await Promise.all([
-    serverSupabase
+    supabase
       .from('lp_portfolio')
       .select('heading, subheading')
       .eq('id', ROW_ID)
       .single<PortfolioRow>(),
-    serverSupabase
+    supabase
       .from('lp_portfolio_items')
       .select('id, title, description, image_url, link_url, service_id, sort_order')
       .eq('portfolio_id', ROW_ID)

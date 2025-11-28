@@ -2,8 +2,6 @@ import { createServerSupabaseClient } from '@/lib/supabase/client';
 import type { PortfolioItem, ServiceItem } from '@/types/landing';
 import type { PostgrestError } from '@supabase/supabase-js';
 
-const serverSupabase = createServerSupabaseClient();
-
 export type ServiceDetail = ServiceItem & {
   /**
    * 長めの説明文。既存 description を fallback とする。
@@ -69,7 +67,8 @@ function wrapNetworkError(error: PostgrestError | Error, slug: string): Error {
 }
 
 export async function getServiceDetailBySlug(slug: string): Promise<ServiceDetail | null> {
-  const { data, error } = await serverSupabase
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
     .from('lp_service_items')
     .select('id, slug, title, description, background_color, gallery')
     .eq('slug', slug)
@@ -101,7 +100,8 @@ export async function getServiceDetailBySlug(slug: string): Promise<ServiceDetai
 }
 
 export async function getPortfoliosByServiceId(serviceId: string): Promise<ServicePortfolioItem[]> {
-  const { data, error } = await serverSupabase
+  const supabase = createServerSupabaseClient();
+  const { data, error } = await supabase
     .from('lp_portfolio_items')
     .select('id, title, description, image_url, link_url, service_id, sort_order')
     .eq('service_id', serviceId)
