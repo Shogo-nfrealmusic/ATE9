@@ -8,12 +8,12 @@ import type { JSX } from 'react';
 import { ServiceHero } from './components/ServiceHero';
 import { ServicePortfolioSection } from './components/ServicePortfolioSection';
 
-export const revalidate = 3600;
+export const revalidate = 300;
 
 type ServiceDetailPageProps = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 };
 
 async function loadServiceData(slug: string) {
@@ -31,22 +31,36 @@ async function loadServiceData(slug: string) {
 export async function generateMetadata({
   params,
 }: ServiceDetailPageProps): Promise<Metadata | undefined> {
-  const service = await getServiceDetailBySlug(params.slug);
+  const { slug } = await params;
+  try {
+    const service = await getServiceDetailBySlug(slug);
 
-  if (!service) {
-    return undefined;
+    if (!service) {
+      return undefined;
+    }
+
+    return {
+      title: `${service.title} | ATE9`,
+      description: service.description,
+    };
+  } catch (error) {
+    console.error('[ServiceDetailPage.generateMetadata] failed to load service', { slug, error });
+    throw error;
   }
-
-  return {
-    title: `${service.title} | ATE9`,
-    description: service.description,
-  };
 }
 
 export default async function ServiceDetailPage({
   params,
 }: ServiceDetailPageProps): Promise<JSX.Element> {
-  const data = await loadServiceData(params.slug);
+  const { slug } = await params;
+  let data;
+  try {
+    data = await loadServiceData(slug);
+  } catch (error) {
+    console.error('[ServiceDetailPage] failed to load service', { slug, error });
+    // fetch error の場合は空データでページをレンダリング（notFound しない）
+    data = null;
+  }
 
   if (!data) {
     notFound();

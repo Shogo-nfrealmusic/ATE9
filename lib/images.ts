@@ -1,28 +1,123 @@
-const GOOGLE_CONTENT_HOST = 'googleusercontent.com';
+const STORAGE_OBJECT_PATH = '/storage/v1/object/';
+const STORAGE_RENDER_PATH = '/storage/v1/render/image/';
 
-const sizeMap: Record<'small' | 'medium' | 'full', number> = {
-  small: 640,
-  medium: 1200,
-  full: 1800,
-};
+export const IMAGE_FALLBACK_PIXEL =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 
-export const DEFAULT_BLUR_DATA_URL =
-  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMSIgaGVpZ2h0PSIxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxIiBoZWlnaHQ9IjEiIGZpbGw9IiNFMEUwRTAiIC8+PC9zdmc+';
+function safeParseUrl(value: string | undefined): URL | null {
+  if (!value) {
+    return null;
+  }
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+}
 
-export function getOptimizedImageUrl(
-  url: string,
-  size: 'small' | 'medium' | 'full' = 'full',
-): string {
+function getSupabaseBaseUrl(): URL | null {
+  return safeParseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+}
+
+function normalizeSrc(src?: string | null): string | null {
+  if (typeof src !== 'string') {
+    return null;
+  }
+  const trimmed = src.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function isAbsoluteUrl(src: string): boolean {
+  return /^https?:\/\//i.test(src);
+}
+
+function isSupabaseRelativePath(src: string): boolean {
+  const normalized = src.startsWith('/') ? src.slice(1) : src;
+  return normalized.startsWith('storage/');
+}
+
+function toRenderEndpoint(url: URL): URL {
+  const next = new URL(url.toString());
+
+  if (next.pathname.startsWith(STORAGE_RENDER_PATH)) {
+    return next;
+  }
+
+  if (next.pathname.startsWith(STORAGE_OBJECT_PATH)) {
+    const objectPath = next.pathname.slice(STORAGE_OBJECT_PATH.length);
+    next.pathname = `${STORAGE_RENDER_PATH}${objectPath}`;
+  }
+
+  return next;
+}
+
+export function buildRenderImageUrl(
+  src?: string | null,
+  options?: { width?: number; quality?: number },
+): string | null {
+  const normalized = normalizeSrc(src);
+  if (!normalized) {
+    return null;
+  }
+
+  let url: URL | null = null;
+
+  if (isAbsoluteUrl(normalized)) {
+    try {
+      url = new URL(normalized);
+    } catch {
+      return normalized;
+    }
+  } else if (isSupabaseRelativePath(normalized)) {
+    const baseUrl = getSupabaseBaseUrl();
+    if (!baseUrl) {
+      return normalized;
+    }
+    try {
+      url = new URL(normalized.startsWith('/') ? normalized : `/${normalized}`, baseUrl);
+    } catch {
+      return normalized;
+    }
+  } else {
+    return normalized;
+  }
+
   if (!url) {
-    return '';
+    return normalized;
   }
 
-  if (!url.includes(GOOGLE_CONTENT_HOST)) {
-    return url;
+  const supabaseBaseUrl = getSupabaseBaseUrl();
+  if (supabaseBaseUrl && url.origin === supabaseBaseUrl.origin) {
+    url = toRenderEndpoint(url);
   }
 
-  const width = sizeMap[size];
-  return url.includes('=')
-    ? `${url}&w=${width}`
-    : `${url}=w${width}-h${Math.round(width * 0.75)}-c`;
+  if (options?.width) {
+    url.searchParams.set('width', String(options.width));
+  }
+  if (options?.quality) {
+    url.searchParams.set('quality', String(options.quality));
+  }
+
+  return url.toString();
+}
+
+export function buildRenderSrcSet(
+  src: string | null | undefined,
+  widths: number[],
+  options?: { quality?: number },
+): string | undefined {
+  const normalized = normalizeSrc(src);
+  if (!normalized || widths.length === 0) {
+    return undefined;
+  }
+
+  const parts: string[] = [];
+  for (const width of widths) {
+    const url = buildRenderImageUrl(normalized, { width, quality: options?.quality });
+    if (url) {
+      parts.push(`${url} ${width}w`);
+    }
+  }
+
+  return parts.length > 0 ? parts.join(', ') : undefined;
 }
