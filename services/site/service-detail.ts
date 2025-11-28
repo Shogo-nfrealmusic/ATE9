@@ -58,7 +58,13 @@ function isNetworkError(error: unknown): boolean {
 }
 
 function wrapNetworkError(error: PostgrestError | Error, slug: string): Error {
-  const base = error instanceof Error ? error : new Error(error.message);
+  let base: Error;
+  if (error instanceof Error) {
+    base = error;
+  } else {
+    const message = (error as PostgrestError).message ?? 'Unknown error';
+    base = new Error(String(message));
+  }
   return new Error(`Failed to load service detail for slug "${slug}"`, { cause: base });
 }
 
