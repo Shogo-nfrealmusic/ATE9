@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- Supabase render/image delivers optimized assets for LP surfaces without relying on Next/Image. */
-import { IMAGE_FALLBACK_PIXEL, buildRenderImageUrl } from '@/lib/images';
+import { IMAGE_FALLBACK_PIXEL, buildRenderImageUrl, buildRenderSrcSet } from '@/lib/images';
 import type { ServiceDetail } from '@/services/site/service-detail';
 import type { JSX } from 'react';
 
@@ -10,6 +10,8 @@ import type { JSX } from 'react';
  *   - service: API から取得したサービス詳細 (`ServiceDetail`)
  */
 const IMAGE_PLACEHOLDER = IMAGE_FALLBACK_PIXEL;
+const PRIMARY_WIDTHS = [960, 1440, 1920];
+const SECONDARY_WIDTHS = [480, 640, 960];
 
 export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Element {
   const gradientStyle = {
@@ -49,7 +51,12 @@ export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Elemen
           <div className="grid flex-1 grid-cols-2 gap-4">
             <div className="relative col-span-2 aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-black/40 sm:col-span-1 sm:aspect-[4/5]">
               <img
-                src={buildRenderImageUrl(primaryImage) ?? primaryImage ?? IMAGE_PLACEHOLDER}
+                src={
+                  buildRenderImageUrl(primaryImage, { width: 1600, quality: 80 }) ??
+                  primaryImage ??
+                  IMAGE_PLACEHOLDER
+                }
+                srcSet={buildRenderSrcSet(primaryImage, PRIMARY_WIDTHS, { quality: 80 })}
                 sizes="(max-width: 1024px) 50vw, 25vw"
                 alt={`${service.title} hero`}
                 loading="eager"
@@ -64,7 +71,13 @@ export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Elemen
                 className="relative aspect-[4/5] overflow-hidden rounded-xl border border-white/10 bg-black/40"
               >
                 <img
-                  src={buildRenderImageUrl(url) ?? url ?? IMAGE_PLACEHOLDER}
+                  src={
+                    buildRenderImageUrl(url, { width: 800, quality: 70 }) ??
+                    url ??
+                    IMAGE_PLACEHOLDER
+                  }
+                  srcSet={buildRenderSrcSet(url, SECONDARY_WIDTHS, { quality: 70 })}
+                  sizes="(max-width: 1024px) 50vw, 25vw"
                   alt={`${service.title} visual ${index + 2}`}
                   loading="lazy"
                   decoding="async"

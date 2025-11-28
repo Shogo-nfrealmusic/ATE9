@@ -110,7 +110,7 @@ export async function getPortfoliosByServiceId(serviceId: string): Promise<Servi
 
   if (error) {
     console.error('[getPortfoliosByServiceId] failed', { serviceId, error });
-    throw error;
+    return [];
   }
 
   if (!data) {

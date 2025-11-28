@@ -1,4 +1,5 @@
-const SUPABASE_BASE_URL = safeParseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
+const STORAGE_OBJECT_PATH = '/storage/v1/object/';
+const STORAGE_RENDER_PATH = '/storage/v1/render/image/';
 
 export const IMAGE_FALLBACK_PIXEL =
   'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
@@ -12,6 +13,10 @@ function safeParseUrl(value: string | undefined): URL | null {
   } catch {
     return null;
   }
+}
+
+function getSupabaseBaseUrl(): URL | null {
+  return safeParseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
 }
 
 function normalizeSrc(src?: string | null): string | null {
@@ -31,39 +36,88 @@ function isSupabaseRelativePath(src: string): boolean {
   return normalized.startsWith('storage/');
 }
 
-export function buildRenderImageUrl(src?: string | null): string | null {
+function toRenderEndpoint(url: URL): URL {
+  const next = new URL(url.toString());
+
+  if (next.pathname.startsWith(STORAGE_RENDER_PATH)) {
+    return next;
+  }
+
+  if (next.pathname.startsWith(STORAGE_OBJECT_PATH)) {
+    const objectPath = next.pathname.slice(STORAGE_OBJECT_PATH.length);
+    next.pathname = `${STORAGE_RENDER_PATH}${objectPath}`;
+  }
+
+  return next;
+}
+
+export function buildRenderImageUrl(
+  src?: string | null,
+  options?: { width?: number; quality?: number },
+): string | null {
   const normalized = normalizeSrc(src);
   if (!normalized) {
     return null;
   }
 
+  let url: URL | null = null;
+
   if (isAbsoluteUrl(normalized)) {
+    try {
+      url = new URL(normalized);
+    } catch {
+      return normalized;
+    }
+  } else if (isSupabaseRelativePath(normalized)) {
+    const baseUrl = getSupabaseBaseUrl();
+    if (!baseUrl) {
+      return normalized;
+    }
+    try {
+      url = new URL(normalized.startsWith('/') ? normalized : `/${normalized}`, baseUrl);
+    } catch {
+      return normalized;
+    }
+  } else {
     return normalized;
   }
 
-  if (isSupabaseRelativePath(normalized)) {
-    if (!SUPABASE_BASE_URL) {
-      console.warn('[buildRenderImageUrl] NEXT_PUBLIC_SUPABASE_URL is not set');
-      return null;
-    }
-    try {
-      const url = new URL(
-        normalized.startsWith('/') ? normalized : `/${normalized}`,
-        SUPABASE_BASE_URL,
-      );
-      return url.toString();
-    } catch (error) {
-      console.error('[buildRenderImageUrl] failed to build absolute Supabase URL', {
-        src: normalized,
-        error,
-      });
-      return null;
+  if (!url) {
+    return normalized;
+  }
+
+  const supabaseBaseUrl = getSupabaseBaseUrl();
+  if (supabaseBaseUrl && url.origin === supabaseBaseUrl.origin) {
+    url = toRenderEndpoint(url);
+  }
+
+  if (options?.width) {
+    url.searchParams.set('width', String(options.width));
+  }
+  if (options?.quality) {
+    url.searchParams.set('quality', String(options.quality));
+  }
+
+  return url.toString();
+}
+
+export function buildRenderSrcSet(
+  src: string | null | undefined,
+  widths: number[],
+  options?: { quality?: number },
+): string | undefined {
+  const normalized = normalizeSrc(src);
+  if (!normalized || widths.length === 0) {
+    return undefined;
+  }
+
+  const parts: string[] = [];
+  for (const width of widths) {
+    const url = buildRenderImageUrl(normalized, { width, quality: options?.quality });
+    if (url) {
+      parts.push(`${url} ${width}w`);
     }
   }
 
-  return normalized;
-}
-
-export function buildRenderSrcSet(): string | undefined {
-  return undefined;
+  return parts.length > 0 ? parts.join(', ') : undefined;
 }

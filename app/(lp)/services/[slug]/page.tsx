@@ -58,7 +58,8 @@ export default async function ServiceDetailPage({
     data = await loadServiceData(slug);
   } catch (error) {
     console.error('[ServiceDetailPage] failed to load service', { slug, error });
-    throw error;
+    // fetch error の場合は空データでページをレンダリング（notFound しない）
+    data = null;
   }
 
   if (!data) {

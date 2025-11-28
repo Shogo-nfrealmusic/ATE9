@@ -31,11 +31,10 @@ export function createBrowserSupabaseClient(): SupabaseClient {
  * Server Action / Admin 保存処理向け service role クライアント
  */
 export function createServerSupabaseClient(): SupabaseClient {
-  if (!SUPABASE_URL) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not set');
-  }
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set');
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    // build 時や env 未設定時は fallback クライアントを返す
+    // ランタイムで実際に使われる際は env が設定されている前提
+    return createFallbackClient();
   }
 
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
