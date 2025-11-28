@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- Supabase render/image delivers optimized assets and Next/Image is intentionally avoided for this surface. */
-import { buildRenderImageUrl, buildRenderSrcSet } from '@/lib/images';
+import { IMAGE_FALLBACK_PIXEL, buildRenderImageUrl } from '@/lib/images';
 import type { JSX } from 'react';
 import type { PortfolioItemForUI } from './types';
 
@@ -7,19 +7,15 @@ type PortfolioCardProps = {
   item: PortfolioItemForUI;
 };
 
-const CARD_IMAGE_WIDTHS = [640, 960, 1280];
-
 export function PortfolioCard({ item }: PortfolioCardProps): JSX.Element {
-  const optimizedSrc = buildRenderImageUrl(item.imageUrl, { width: 960, quality: 70 });
-  const imageSrc = optimizedSrc || item.imageUrl;
-  const imageSrcSet = buildRenderSrcSet(item.imageUrl, CARD_IMAGE_WIDTHS, { quality: 70 });
+  const rawImageSrc = item.imageUrl ?? '';
+  const resolvedSrc = buildRenderImageUrl(rawImageSrc) ?? rawImageSrc;
+  const imageSrc = resolvedSrc || IMAGE_FALLBACK_PIXEL;
   const card = (
     <div className="group relative flex h-full flex-col overflow-hidden rounded-xl bg-ate9-gray transition duration-300 hover:-translate-y-1 hover:shadow-[0_0_35px_rgba(242,66,109,0.18)]">
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-t-xl bg-neutral-900">
         <img
           src={imageSrc}
-          srcSet={imageSrcSet}
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           alt={item.title}
           loading="lazy"
           decoding="async"
