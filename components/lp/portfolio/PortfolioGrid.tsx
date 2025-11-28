@@ -1,7 +1,3 @@
-'use client';
-
-import { motionTransition, staggerContainer, viewportOnce } from '@/lib/motion/variants';
-import { motion } from 'framer-motion';
 import type { JSX } from 'react';
 import { PortfolioCard } from './PortfolioCard';
 import type { PortfolioItemForUI } from './types';
@@ -33,52 +29,24 @@ export function PortfolioGrid({
       {(heading || subtitle) && (
         <div className="text-center">
           {eyebrowLabel && (
-            <motion.p
-              className="text-xs uppercase tracking-[0.45em] text-white/60"
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={viewportOnce}
-              transition={motionTransition.fast}
-            >
-              {eyebrowLabel}
-            </motion.p>
+            <p className="text-xs uppercase tracking-[0.45em] text-white/60">{eyebrowLabel}</p>
           )}
           {heading && (
-            <motion.h2
-              className="text-3xl font-bold leading-tight tracking-[-0.015em] text-white sm:text-4xl"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={viewportOnce}
-              transition={motionTransition.default}
-            >
+            <h2 className="text-3xl font-bold leading-tight tracking-[-0.015em] text-white sm:text-4xl">
               {heading}
-            </motion.h2>
+            </h2>
           )}
           {subtitle && (
-            <motion.p
-              className="mx-auto mt-4 max-w-2xl text-sm text-white/70 sm:text-base"
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={viewportOnce}
-              transition={motionTransition.default}
-            >
-              {subtitle}
-            </motion.p>
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-white/70 sm:text-base">{subtitle}</p>
           )}
         </div>
       )}
 
-      <motion.div
-        className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 xl:grid-cols-3"
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewportOnce}
-      >
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8 xl:grid-cols-3">
         {items.map((item) => (
           <PortfolioCard key={item.id} item={item} />
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

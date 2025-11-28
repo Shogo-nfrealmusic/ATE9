@@ -1,4 +1,4 @@
-import { createBrowserSupabaseClient } from '@/lib/supabase/client';
+import { createServerSupabaseClient } from '@/lib/supabase/client';
 import type {
   AboutContent,
   BrandPhilosophyContent,
@@ -10,9 +10,10 @@ import type {
   ServicesContent,
 } from '@/types/landing';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { cache } from 'react';
 
 const ROW_ID = 'default';
-const publicSupabase = createBrowserSupabaseClient();
+const serverSupabase = createServerSupabaseClient();
 
 const FALLBACK_CONTENT: LandingContent = {
   hero: {
@@ -247,7 +248,7 @@ type ContentRow = {
 };
 
 async function getAboutFromDb(): Promise<AboutContent | null> {
-  const { data, error } = await publicSupabase
+  const { data, error } = await serverSupabase
     .from('lp_content')
     .select('content')
     .eq('id', ROW_ID)
@@ -264,7 +265,7 @@ async function getAboutFromDb(): Promise<AboutContent | null> {
 }
 
 async function getBrandPhilosophyFromDb(): Promise<BrandPhilosophyContent | null> {
-  const { data, error } = await publicSupabase
+  const { data, error } = await serverSupabase
     .from('lp_content')
     .select('content')
     .eq('id', ROW_ID)
@@ -278,7 +279,7 @@ async function getBrandPhilosophyFromDb(): Promise<BrandPhilosophyContent | null
 }
 
 async function getHeroFromDb(): Promise<HeroContent | null> {
-  const { data, error } = await publicSupabase
+  const { data, error } = await serverSupabase
     .from('lp_hero')
     .select('heading, subheading, cta_label, cta_link, image_url')
     .eq('id', ROW_ID)
@@ -300,8 +301,8 @@ async function getHeroFromDb(): Promise<HeroContent | null> {
 async function getServicesFromDb(): Promise<ServicesContent | null> {
   const [{ data: serviceRow, error: servicesError }, { data: items, error: itemsError }] =
     await Promise.all([
-      publicSupabase.from('lp_services').select('intro').eq('id', ROW_ID).single<ServiceRow>(),
-      publicSupabase
+      serverSupabase.from('lp_services').select('intro').eq('id', ROW_ID).single<ServiceRow>(),
+      serverSupabase
         .from('lp_service_items')
         .select('id, slug, title, description, background_color, gallery, sort_order')
         .eq('services_id', ROW_ID)
@@ -330,12 +331,12 @@ async function getServicesFromDb(): Promise<ServicesContent | null> {
 
 async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
   const [{ data: meta, error: metaError }, { data: items, error: itemsError }] = await Promise.all([
-    publicSupabase
+    serverSupabase
       .from('lp_portfolio')
       .select('heading, subheading')
       .eq('id', ROW_ID)
       .single<PortfolioRow>(),
-    publicSupabase
+    serverSupabase
       .from('lp_portfolio_items')
       .select('id, title, description, image_url, link_url, service_id, sort_order')
       .eq('portfolio_id', ROW_ID)
@@ -364,7 +365,7 @@ async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
   };
 }
 
-export async function getLandingContent(): Promise<LandingContent> {
+export const getLandingContent = cache(async (): Promise<LandingContent> => {
   const [hero, about, services, portfolio, brandPhilosophy] = await Promise.all([
     getHeroFromDb(),
     getAboutFromDb(),
@@ -380,7 +381,7 @@ export async function getLandingContent(): Promise<LandingContent> {
     portfolio: portfolio ?? FALLBACK_CONTENT.portfolio,
     brandPhilosophy: brandPhilosophy ?? FALLBACK_CONTENT.brandPhilosophy,
   };
-}
+});
 
 function mergeLpContentSections(
   currentContent: ContentRow['content'] | null | undefined,
@@ -519,21 +520,64 @@ export async function savePortfolioItemsForService({
     };
   });
 
-  const { error } = await supabase.rpc('upsert_lp_portfolio_for_service', {
-    p_portfolio_id: ROW_ID,
-    p_service_id: serviceId,
-    p_items: normalizedItems.map((item) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      imageUrl: item.imageUrl,
-      linkUrl: item.linkUrl ?? null,
-    })),
-  });
+  type ExistingRow = { id: string };
+  const baseExistingQuery = supabase
+    .from('lp_portfolio_items')
+    .select('id')
+    .eq('portfolio_id', ROW_ID);
+  const existingQuery = serviceId
+    ? baseExistingQuery.eq('service_id', serviceId)
+    : baseExistingQuery.is('service_id', null);
+  const { data: existingRows, error: existingError } = await existingQuery.returns<ExistingRow[]>();
 
-  if (error) {
-    console.error('[savePortfolioItemsForService] failed', error, { serviceId });
-    throw new Error(`portfolio-items: ${error.message}`);
+  if (existingError) {
+    console.error('[savePortfolioItemsForService] fetch failed', existingError, { serviceId });
+    throw new Error(`portfolio-items-fetch: ${existingError.message}`);
+  }
+
+  const nextRows = normalizedItems.map((item, index) => ({
+    id: item.id,
+    portfolio_id: ROW_ID,
+    title: item.title,
+    description: item.description,
+    image_url: item.imageUrl,
+    link_url: item.linkUrl ?? null,
+    sort_order: index,
+    service_id: serviceId ?? null,
+  }));
+
+  const nextIds = new Set(nextRows.map((row) => row.id));
+  const deleteIds =
+    existingRows?.filter((row) => row.id && !nextIds.has(row.id)).map((row) => row.id) ?? [];
+
+  if (deleteIds.length > 0) {
+    const baseDeleteQuery = supabase
+      .from('lp_portfolio_items')
+      .delete()
+      .eq('portfolio_id', ROW_ID)
+      .in('id', deleteIds);
+    const deleteQuery = serviceId
+      ? baseDeleteQuery.eq('service_id', serviceId)
+      : baseDeleteQuery.is('service_id', null);
+    const { error: deleteError } = await deleteQuery;
+    if (deleteError) {
+      console.error('[savePortfolioItemsForService] delete failed', deleteError, {
+        serviceId,
+        deleteIds,
+      });
+      throw new Error(`portfolio-items-delete: ${deleteError.message}`);
+    }
+  }
+
+  if (nextRows.length > 0) {
+    const { error: upsertError } = await supabase
+      .from('lp_portfolio_items')
+      .upsert(nextRows, { onConflict: 'id' });
+
+    if (upsertError) {
+      console.error('[savePortfolioItemsForService] upsert failed', upsertError, { serviceId });
+      throw new Error(`portfolio-items-upsert: ${upsertError.message}`);
+    }
   }
 
   return normalizedItems;

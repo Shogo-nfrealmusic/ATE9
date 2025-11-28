@@ -1,6 +1,7 @@
 'use client';
 
 import { saveLandingContentAction } from '@/app/actions/landing';
+import { ToasterClient } from '@/components/ui/ToasterClient';
 import type { LandingContent, PortfolioItem } from '@/types/landing';
 import { useRouter } from 'next/navigation';
 import type { JSX } from 'react';
@@ -101,6 +102,24 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
       portfolio: {
         ...prev.portfolio,
         items: replaceItemsForService(prev.portfolio.items, params.serviceId, params.items),
+      },
+    }));
+  };
+
+  const handlePortfolioRelinked = ({
+    itemId,
+    targetServiceId,
+  }: {
+    itemId: string;
+    targetServiceId: string;
+  }) => {
+    updateContent((prev) => ({
+      ...prev,
+      portfolio: {
+        ...prev.portfolio,
+        items: prev.portfolio.items.map((item) =>
+          item.id === itemId ? { ...item, serviceId: targetServiceId } : item,
+        ),
       },
     }));
   };
@@ -209,10 +228,13 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
           serviceTitle={worksDialogTarget.serviceTitle}
           serviceSlug={worksDialogTarget.serviceSlug}
           items={worksDialogItems}
+          services={content.services.items}
           onItemsSaved={handleWorksSaved}
+          onPortfolioRelinked={handlePortfolioRelinked}
           onClose={closeWorksDialog}
         />
       )}
+      <ToasterClient />
     </div>
   );
 }

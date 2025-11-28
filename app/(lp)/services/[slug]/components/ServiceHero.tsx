@@ -1,3 +1,4 @@
+import { DEFAULT_BLUR_DATA_URL, getOptimizedImageUrl } from '@/lib/images';
 import type { ServiceDetail } from '@/services/site/service-detail';
 import Image from 'next/image';
 import type { JSX } from 'react';
@@ -18,10 +19,11 @@ export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Elemen
       ? extractHighlights(service.longDescription)
       : [];
   const gallery = service.gallery.slice(0, 4);
+  const [primaryImage, ...secondaryImages] = gallery;
 
   return (
     <section className="relative overflow-hidden border-b border-white/10" style={gradientStyle}>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.1),_transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.1),transparent_55%)]" />
       <div className="relative mx-auto flex max-w-6xl flex-col gap-10 px-4 py-20 sm:px-6 lg:flex-row lg:items-center lg:gap-16 lg:px-10">
         <div className="flex-1 space-y-6">
           <p className="text-xs uppercase tracking-[0.5em] text-white/60">Services</p>
@@ -41,18 +43,33 @@ export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Elemen
           )}
         </div>
 
-        {gallery.length > 0 && (
+        {primaryImage && (
           <div className="grid flex-1 grid-cols-2 gap-4">
-            {gallery.map((url) => (
+            <div className="relative col-span-2 aspect-4/3 overflow-hidden rounded-xl border border-white/10 bg-black/40 sm:col-span-1 sm:aspect-4/5">
+              <Image
+                src={getOptimizedImageUrl(primaryImage, 'full') || primaryImage}
+                alt={`${service.title} hero`}
+                fill
+                priority
+                sizes="(max-width: 1024px) 50vw, 25vw"
+                placeholder="blur"
+                blurDataURL={DEFAULT_BLUR_DATA_URL}
+                className="object-cover"
+              />
+            </div>
+            {secondaryImages.map((url, index) => (
               <div
-                key={url}
-                className="relative aspect-[4/5] overflow-hidden rounded-xl border border-white/10 bg-black/40"
+                key={`${url}-${index}`}
+                className="relative aspect-4/5 overflow-hidden rounded-xl border border-white/10 bg-black/40"
               >
                 <Image
-                  src={url}
-                  alt={`${service.title} visual`}
+                  src={getOptimizedImageUrl(url, 'medium') || url}
+                  alt={`${service.title} visual ${index + 2}`}
                   fill
+                  loading="lazy"
                   sizes="(max-width: 1024px) 50vw, 25vw"
+                  placeholder="blur"
+                  blurDataURL={DEFAULT_BLUR_DATA_URL}
                   className="object-cover"
                 />
               </div>
