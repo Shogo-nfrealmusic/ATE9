@@ -29,12 +29,13 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { ate9Colors } from '@/config/theme';
-import { generateRandomId } from '@/lib/utils';
+import { cn, generateRandomId } from '@/lib/utils';
 import type { PortfolioItem, ServiceItem, ServicesContent } from '@/types/landing';
 import { ArrowDown, ArrowUp, Edit, Plus, Trash2, X } from 'lucide-react';
 import type { JSX } from 'react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { adminDialogSurfaceClass } from '../adminStyles';
 import type { ManageWorksTarget } from '../types';
 
 type ServicesSectionEditorProps = {
@@ -351,14 +352,20 @@ export function ServicesSectionEditor({
 
       {/* 編集モーダル */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingItem ? 'サービスを編集' : '新しいサービスを追加'}</DialogTitle>
-            <DialogDescription>サービスカードの情報を入力してください</DialogDescription>
+        <DialogContent
+          className={cn(adminDialogSurfaceClass, 'max-h-[90vh] w-full max-w-2xl overflow-y-auto')}
+        >
+          <DialogHeader className="text-left">
+            <DialogTitle className="text-2xl font-semibold text-neutral-900">
+              {editingItem ? 'サービスを編集' : '新しいサービスを追加'}
+            </DialogTitle>
+            <DialogDescription className="text-sm text-neutral-500">
+              サービスカードの情報を入力してください
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-text-headings">
+              <Label htmlFor="title" className="text-neutral-800">
                 Title *
               </Label>
               <Input
@@ -369,7 +376,7 @@ export function ServicesSectionEditor({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="slug" className="text-text-headings">
+              <Label htmlFor="slug" className="text-neutral-800">
                 Slug *
               </Label>
               <Input
@@ -390,14 +397,14 @@ export function ServicesSectionEditor({
                 className={`text-xs ${
                   formData.slug && !slugRegex.test(formData.slug)
                     ? 'text-ate9-red-light'
-                    : 'text-text-body/70'
+                    : 'text-neutral-500'
                 }`}
               >
                 英小文字とハイフンのみ。例: creative-production
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-text-headings">
+              <Label htmlFor="description" className="text-neutral-800">
                 Description *
               </Label>
               <Textarea
@@ -409,7 +416,7 @@ export function ServicesSectionEditor({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="backgroundColor" className="text-text-headings">
+              <Label htmlFor="backgroundColor" className="text-neutral-800">
                 Background Color *
               </Label>
               <Select
@@ -455,14 +462,14 @@ export function ServicesSectionEditor({
                   </div>
                 ))}
                 {formData.gallery.length === 0 && (
-                  <p className="text-xs text-text-body/70">
+                  <p className="text-xs text-neutral-500">
                     画像URLがありません。Add URL ボタンで追加してください。
                   </p>
                 )}
               </div>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:justify-end">
             <Button variant="outline" onClick={handleCloseDialog}>
               キャンセル
             </Button>

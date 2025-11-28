@@ -39,9 +39,6 @@
   .bg-primary {
     background-color: #ff0303;
   }
-  .bg-primary\/10 {
-    background-color: rgba(255, 3, 3, 0.1);
-  }
 }
 
 :root {

@@ -377,7 +377,7 @@ export function BrandPhilosophySectionEditor({
                   value={part.variant ?? 'default'}
                   onValueChange={(value) => handleClosingPartChange(part.id, 'variant', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue placeholder="Variant" />
                   </SelectTrigger>
                   <SelectContent>
