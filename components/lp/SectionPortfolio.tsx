@@ -1,5 +1,3 @@
-'use client';
-
 import { PortfolioGrid } from '@/components/lp/portfolio/PortfolioGrid';
 import type { PortfolioItemForUI } from '@/components/lp/portfolio/types';
 import type { PortfolioContent } from '@/types/landing';

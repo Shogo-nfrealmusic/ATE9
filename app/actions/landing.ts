@@ -54,3 +54,55 @@ export async function savePortfolioItemsForServiceAction({
     throw error;
   }
 }
+
+type LinkPortfolioItemToServiceParams = {
+  portfolioItemId: string;
+  targetServiceId: string;
+  targetServiceSlug?: string;
+};
+
+export async function linkPortfolioItemToServiceAction({
+  portfolioItemId,
+  targetServiceId,
+  targetServiceSlug,
+}: LinkPortfolioItemToServiceParams): Promise<void> {
+  const supabase = createServerSupabaseClient();
+
+  const { data: sortData, error: sortError } = await supabase
+    .from('lp_portfolio_items')
+    .select('sort_order')
+    .eq('service_id', targetServiceId)
+    .order('sort_order', { ascending: false })
+    .limit(1);
+
+  if (sortError) {
+    console.error('[linkPortfolioItemToServiceAction] failed to load sort order', sortError, {
+      targetServiceId,
+    });
+    throw new Error(sortError.message);
+  }
+
+  const nextSortOrder = ((sortData?.[0]?.sort_order as number | undefined) ?? -1) + 1;
+
+  const { error } = await supabase
+    .from('lp_portfolio_items')
+    .update({
+      service_id: targetServiceId,
+      sort_order: nextSortOrder,
+    })
+    .eq('id', portfolioItemId);
+
+  if (error) {
+    console.error('[linkPortfolioItemToServiceAction] update failed', error, {
+      portfolioItemId,
+      targetServiceId,
+    });
+    throw new Error(error.message);
+  }
+
+  revalidatePath('/', 'page');
+  if (targetServiceSlug) {
+    revalidatePath(`/services/${targetServiceSlug}`, 'page');
+  }
+  revalidatePath('/admin/dashboard', 'page');
+}

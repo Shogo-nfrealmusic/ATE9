@@ -1,33 +1,12 @@
-'use client';
-
-import { fadeInUp, viewportOnce } from '@/lib/motion/variants';
-import { motion } from 'framer-motion';
 import Link from 'next/link';
 import type { JSX } from 'react';
 
 export function SiteFooter(): JSX.Element {
   return (
-    <motion.footer
-      className="bg-black border-t border-ate9-gray mt-16"
-      id="contact"
-      initial="hidden"
-      whileInView="visible"
-      viewport={viewportOnce}
-      variants={{
-        hidden: {},
-        visible: {
-          transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.2,
-          },
-        },
-      }}
-    >
-      <div className="max-w-6xl mx-auto px-10 py-8 flex flex-col md:flex-row justify-between items-center text-center md:text-left gap-6">
-        <motion.p className="text-white/80 text-sm font-medium" variants={fadeInUp}>
-          We are not a company. We are a family.
-        </motion.p>
-        <motion.div className="flex flex-col items-center md:items-end gap-4" variants={fadeInUp}>
+    <footer className="mt-16 border-t border-ate9-gray bg-black">
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-6 px-10 py-8 text-center md:flex-row md:justify-between md:text-left">
+        <p className="text-sm font-medium text-white/80">We are not a company. We are a family.</p>
+        <div className="flex flex-col items-center gap-4 md:items-end">
           <div className="flex items-center gap-5">
             <Link
               href="#"
@@ -90,8 +69,8 @@ export function SiteFooter(): JSX.Element {
             </Link>
           </div>
           <p className="text-xs text-white/50">© 2024 ATE9. All rights reserved.</p>
-        </motion.div>
+        </div>
       </div>
-    </motion.footer>
+    </footer>
   );
 }

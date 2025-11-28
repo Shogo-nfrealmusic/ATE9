@@ -1,6 +1,9 @@
 'use client';
 
-import { savePortfolioItemsForServiceAction } from '@/app/actions/landing';
+import {
+  linkPortfolioItemToServiceAction,
+  savePortfolioItemsForServiceAction,
+} from '@/app/actions/landing';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,6 +16,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Table,
   TableBody,
   TableCell,
@@ -22,7 +32,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { generateRandomId } from '@/lib/utils';
-import type { PortfolioItem } from '@/types/landing';
+import type { PortfolioItem, ServiceItem } from '@/types/landing';
 import { ArrowDown, ArrowUp, Edit, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import type { JSX } from 'react';
@@ -35,7 +45,9 @@ type ServiceWorksDialogProps = {
   serviceTitle: string;
   serviceSlug?: string;
   items: PortfolioItem[];
+  services: ServiceItem[];
   onItemsSaved: (params: { serviceId: string | null; items: PortfolioItem[] }) => void;
+  onPortfolioRelinked?: (params: { itemId: string; targetServiceId: string }) => void;
   onClose: () => void;
 };
 
@@ -52,18 +64,23 @@ export function ServiceWorksDialog({
   serviceTitle,
   serviceSlug,
   items,
+  services,
   onItemsSaved,
+  onPortfolioRelinked,
   onClose,
 }: ServiceWorksDialogProps): JSX.Element {
   const normalizedServiceId = ensureServiceKey(serviceId);
   const [localItems, setLocalItems] = useState<PortfolioItem[]>(items);
   const [formState, setFormState] = useState<ItemFormState | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [linkSelections, setLinkSelections] = useState<Record<string, string>>({});
+  const [linkingItemId, setLinkingItemId] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
       setLocalItems(items);
       setFormState(null);
+      setLinkSelections({});
     }
   }, [items, open]);
 
@@ -202,6 +219,50 @@ export function ServiceWorksDialog({
     }
   };
 
+  const handleLinkSelectionChange = (itemId: string, value: string) => {
+    setLinkSelections((prev) => ({
+      ...prev,
+      [itemId]: value,
+    }));
+  };
+
+  const handleLinkToService = async (item: PortfolioItem, targetServiceId: string) => {
+    const targetService = services.find((service) => service.id === targetServiceId);
+    if (!targetService) {
+      toast.error('選択したサービスが見つかりません。');
+      return;
+    }
+
+    setLinkingItemId(item.id);
+    try {
+      await linkPortfolioItemToServiceAction({
+        portfolioItemId: item.id,
+        targetServiceId,
+        targetServiceSlug: targetService.slug ?? undefined,
+      });
+
+      const nextItems = localItems.filter((entry) => entry.id !== item.id);
+      setLocalItems(nextItems);
+      setLinkSelections((prev) => {
+        const next = { ...prev };
+        delete next[item.id];
+        return next;
+      });
+      onItemsSaved({
+        serviceId: normalizedServiceId,
+        items: nextItems,
+      });
+      onPortfolioRelinked?.({ itemId: item.id, targetServiceId });
+      toast.success(`${item.title} を ${targetService.title} に紐づけました`);
+    } catch (error) {
+      toast.error('紐づけに失敗しました', {
+        description: error instanceof Error ? error.message : '不明なエラーが発生しました',
+      });
+    } finally {
+      setLinkingItemId(null);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={(next) => (next ? undefined : onClose())}>
       <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
@@ -280,47 +341,81 @@ export function ServiceWorksDialog({
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">{index + 1}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleReorder(index, 'up')}
-                          disabled={index === 0}
-                          aria-label="Move up"
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleReorder(index, 'down')}
-                          disabled={index === localItems.length - 1}
-                          aria-label="Move down"
-                        >
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => beginEdit(item)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleDelete(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div className="flex flex-col items-end gap-2">
+                        {normalizedServiceId === null && services.length > 0 && (
+                          <div className="flex w-full flex-col gap-2 sm:w-64">
+                            <Select
+                              value={linkSelections[item.id] ?? ''}
+                              onValueChange={(value) => handleLinkSelectionChange(item.id, value)}
+                            >
+                              <SelectTrigger className="h-9 w-full bg-background text-left text-sm">
+                                <SelectValue placeholder="紐づけ先サービスを選択" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {services.map((service) => (
+                                  <SelectItem key={service.id} value={service.id}>
+                                    {service.title}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Button
+                              type="button"
+                              variant="default"
+                              disabled={!linkSelections[item.id] || linkingItemId === item.id}
+                              onClick={() => {
+                                const targetService = linkSelections[item.id];
+                                if (targetService) {
+                                  void handleLinkToService(item, targetService);
+                                }
+                              }}
+                            >
+                              {linkingItemId === item.id ? '紐づけ中...' : '紐づけ'}
+                            </Button>
+                          </div>
+                        )}
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleReorder(index, 'up')}
+                            disabled={index === 0}
+                            aria-label="Move up"
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleReorder(index, 'down')}
+                            disabled={index === localItems.length - 1}
+                            aria-label="Move down"
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => beginEdit(item)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => handleDelete(item.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </TableCell>
                   </TableRow>

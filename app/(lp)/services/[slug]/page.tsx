@@ -1,3 +1,4 @@
+import { Breadcrumb } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { getPortfoliosByServiceId, getServiceDetailBySlug } from '@/services/site/service-detail';
 import type { Metadata } from 'next';
@@ -7,12 +8,12 @@ import type { JSX } from 'react';
 import { ServiceHero } from './components/ServiceHero';
 import { ServicePortfolioSection } from './components/ServicePortfolioSection';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 type ServiceDetailPageProps = {
-  params: Promise<{
+  params: {
     slug: string;
-  }>;
+  };
 };
 
 async function loadServiceData(slug: string) {
@@ -30,8 +31,7 @@ async function loadServiceData(slug: string) {
 export async function generateMetadata({
   params,
 }: ServiceDetailPageProps): Promise<Metadata | undefined> {
-  const { slug } = await params;
-  const service = await getServiceDetailBySlug(slug);
+  const service = await getServiceDetailBySlug(params.slug);
 
   if (!service) {
     return undefined;
@@ -46,18 +46,26 @@ export async function generateMetadata({
 export default async function ServiceDetailPage({
   params,
 }: ServiceDetailPageProps): Promise<JSX.Element> {
-  const { slug } = await params;
-  const data = await loadServiceData(slug);
+  const data = await loadServiceData(params.slug);
 
   if (!data) {
     notFound();
   }
 
   const { service, portfolios } = data;
+  const breadcrumbItems = [
+    { label: 'Home', href: '/' },
+    { label: service.title, isCurrent: true },
+  ];
 
   return (
     <div className="flex min-h-screen flex-col bg-ate9-bg text-white">
       <main className="flex-1">
+        <section className="border-b border-white/10 bg-transparent px-4 md:px-8">
+          <div className="mx-auto max-w-6xl">
+            <Breadcrumb className="pt-4 pb-4 md:pt-6 md:pb-6" items={breadcrumbItems} />
+          </div>
+        </section>
         <ServiceHero service={service} />
         <ServicePortfolioSection portfolios={portfolios} serviceTitle={service.title} />
         <section className="border-t border-white/10 bg-black/40 px-4 py-16 sm:px-6 md:py-20 lg:px-10">

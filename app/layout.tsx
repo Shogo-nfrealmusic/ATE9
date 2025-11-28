@@ -1,5 +1,4 @@
 /* eslint-disable @next/next/no-page-custom-font */
-import { Toaster } from '@/components/ui/sonner';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono, Space_Grotesk } from 'next/font/google';
 import type { JSX } from 'react';
@@ -44,7 +43,6 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
       >
         {children}
-        <Toaster />
       </body>
     </html>
   );
