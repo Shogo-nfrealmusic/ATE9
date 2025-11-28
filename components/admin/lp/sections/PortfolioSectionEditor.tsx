@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import type { PortfolioContent, ServiceItem } from '@/types/landing';
 import type { JSX } from 'react';
+import { adminCardPaddingClass, adminCardSurfaceClass } from '../adminStyles';
 import type { ManageWorksTarget } from '../types';
 
 type PortfolioSectionEditorProps = {
@@ -85,10 +87,13 @@ export function PortfolioSectionEditor({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border border-border bg-card p-4">
-            <p className="text-sm text-text-body">
+          <div className={cn(adminCardSurfaceClass, adminCardPaddingClass)}>
+            <p className="text-sm text-neutral-600">
               現在 {totalItems} 件のポートフォリオカードがあります。カードの並び順は
-              <span className="font-semibold"> 「サービス × sort_order」</span>{' '}
+              <span className="font-semibold text-neutral-900">
+                {' '}
+                「サービス × sort_order」
+              </span>{' '}
               単位で再計算されます。
             </p>
           </div>
@@ -96,11 +101,15 @@ export function PortfolioSectionEditor({
             {services.map((service) => (
               <div
                 key={service.id}
-                className="flex items-center justify-between rounded-lg border border-border bg-card p-4"
+                className={cn(
+                  adminCardSurfaceClass,
+                  adminCardPaddingClass,
+                  'flex items-center justify-between gap-4',
+                )}
               >
                 <div>
-                  <p className="text-lg font-semibold text-text-headings">{service.title}</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-lg font-semibold text-neutral-900">{service.title}</p>
+                  <p className="text-sm text-neutral-500">
                     紐づく Works: {getWorksCount(service.id)} 件
                   </p>
                 </div>
@@ -118,10 +127,16 @@ export function PortfolioSectionEditor({
                 </Button>
               </div>
             ))}
-            <div className="flex items-center justify-between rounded-lg border border-dashed border-border bg-muted p-4">
+            <div
+              className={cn(
+                adminCardSurfaceClass,
+                adminCardPaddingClass,
+                'flex items-center justify-between gap-4 border-dashed border-neutral-300',
+              )}
+            >
               <div>
-                <p className="text-lg font-semibold text-text-headings">未紐付け Works</p>
-                <p className="text-sm text-muted-foreground">現在 {getWorksCount(null)} 件</p>
+                <p className="text-lg font-semibold text-neutral-900">未紐付け Works</p>
+                <p className="text-sm text-neutral-500">現在 {getWorksCount(null)} 件</p>
               </div>
               <Button
                 variant="outline"
