@@ -7,10 +7,13 @@ export const metadata: Metadata = {
   description: 'Manage ATE9 projects, users, and analytics through a streamlined admin dashboard.',
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>): JSX.Element {
+}>): Promise<JSX.Element> {
+  // ログインページでは認証チェックをスキップ
+  // 各ページ（dashboard/page.tsx など）で個別に認証チェックを行う
+
   return <div className="min-h-screen bg-background-light text-text-body">{children}</div>;
 }

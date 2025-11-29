@@ -1,6 +1,7 @@
 'use client';
 
 import { saveLandingContentAction } from '@/app/actions/landing';
+import { AdminLogoutButton } from '@/components/admin/lp/AdminLogoutButton';
 import { ToasterClient } from '@/components/ui/ToasterClient';
 import type { LandingContent, PortfolioItem } from '@/types/landing';
 import { useRouter } from 'next/navigation';
@@ -162,12 +163,17 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
   return (
     <div className="flex h-screen overflow-hidden bg-ate9-bg text-text-body">
       {/* 左サイドバー */}
-      <div className="w-64 border-r border-ate9-gray/60 bg-ate9-bg text-white">
+      <div className="w-64 border-r border-ate9-gray/60 bg-ate9-bg text-white flex flex-col">
         <div className="p-6 border-b border-ate9-gray/60">
           <h1 className="text-xl font-semibold tracking-tight">LP Admin</h1>
           <p className="text-sm text-white/60 mt-1">Landing Page 編集</p>
         </div>
-        <SectionTabs activeSection={activeSection} onSectionChange={setActiveSection} />
+        <div className="flex-1 overflow-y-auto">
+          <SectionTabs activeSection={activeSection} onSectionChange={setActiveSection} />
+        </div>
+        <div className="p-4 border-t border-ate9-gray/60">
+          <AdminLogoutButton />
+        </div>
       </div>
 
       {/* 右コンテンツエリア */}
