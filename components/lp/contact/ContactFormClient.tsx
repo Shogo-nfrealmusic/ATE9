@@ -72,7 +72,7 @@ export function ContactFormClient(): JSX.Element {
         throw new Error(`Contact API request failed: ${response.status}`);
       }
 
-      const data: { ok: boolean; discordNotified?: boolean } = await response.json();
+      const data: { ok: boolean } = await response.json();
 
       if (!data.ok) {
         throw new Error('Contact API returned ok=false');
@@ -84,12 +84,6 @@ export function ContactFormClient(): JSX.Element {
 
       // メインのトースト（ユーザー向け）
       toast.success('メッセージを送信しました。ありがとうございます。');
-
-      // Discord通知が落ちていたら、開発者向けにだけ軽くログ
-      if (data.discordNotified === false) {
-        // ユーザーには見せない運用情報なので console だけでOK
-        console.warn('[contact] Discord notification failed or not configured');
-      }
 
       // 数秒後に idle に戻す
       setTimeout(() => {

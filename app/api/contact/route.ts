@@ -23,7 +23,7 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json({ ok: false, error: 'Invalid request body' }, { status: 400 });
     }
 
-    // ① Formspree に送信（ここが「本丸」）
+    // Formspree に送信（ここが「本丸」）
     const formData = new FormData();
     formData.append('name', name);
     formData.append('email', email);
@@ -46,70 +46,8 @@ export async function POST(request: Request): Promise<Response> {
       return NextResponse.json({ ok: false, error: 'Formspree request failed' }, { status: 500 });
     }
 
-    // ② Discord Webhook に送信（あくまでオプション通知）
-    const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
-
-    if (!webhookUrl) {
-      console.error('[contact] DISCORD_WEBHOOK_URL is not configured');
-      // 通知は失敗だが、問い合わせ自体は成功扱い
-      return NextResponse.json(
-        {
-          ok: true,
-          discordNotified: false,
-          warning: 'DISCORD_WEBHOOK_URL is not configured',
-        },
-        { status: 200 },
-      );
-    }
-
-    const discordPayload = {
-      username: 'ATE9 Contact',
-      embeds: [
-        {
-          title: '📩 New Contact Message',
-          color: 16711680,
-          fields: [
-            { name: 'Name', value: name, inline: true },
-            { name: 'Email', value: email, inline: true },
-            { name: 'Message', value: message },
-          ],
-          timestamp: new Date().toISOString(),
-        },
-      ],
-    };
-
-    const discordResponse = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(discordPayload),
-    });
-
-    if (!discordResponse.ok) {
-      console.error('[contact] Discord webhook request failed', {
-        status: discordResponse.status,
-        statusText: discordResponse.statusText,
-      });
-
-      // Discord だけ失敗 → 200 返すがフラグを落とす
-      return NextResponse.json(
-        {
-          ok: true,
-          discordNotified: false,
-        },
-        { status: 200 },
-      );
-    }
-
-    // 両方OK
-    return NextResponse.json(
-      {
-        ok: true,
-        discordNotified: true,
-      },
-      { status: 200 },
-    );
+    // Formspree が成功したら OK を返す
+    return NextResponse.json({ ok: true }, { status: 200 });
   } catch (error) {
     console.error('[contact] Unexpected error', error);
     return NextResponse.json({ ok: false, error: 'Internal Server Error' }, { status: 500 });
