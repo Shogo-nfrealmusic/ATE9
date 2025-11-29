@@ -1,3 +1,4 @@
+import { ToasterClient } from '@/components/ui/ToasterClient';
 import type { Metadata } from 'next';
 import type { JSX } from 'react';
 import '../globals.css';
@@ -16,6 +17,7 @@ export default function LPLayout({
   return (
     <div className="relative w-full overflow-x-hidden bg-background-light font-display text-text-body">
       {children}
+      <ToasterClient />
     </div>
   );
 }
