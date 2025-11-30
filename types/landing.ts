@@ -1,7 +1,12 @@
+export type LocalizedText = {
+  ja: string;
+  en: string;
+};
+
 export type HeroContent = {
-  heading: string;
-  subheading: string;
-  ctaLabel: string;
+  heading: LocalizedText;
+  subheading: LocalizedText;
+  ctaLabel: LocalizedText;
   ctaLink: string;
   imageUrl: string;
 };
@@ -13,21 +18,21 @@ export type ServiceItem = {
    * 英小文字とハイフンのみを推奨。
    */
   slug: string;
-  title: string;
-  description: string;
+  title: LocalizedText;
+  description: LocalizedText;
   backgroundColor: string;
   gallery: string[];
 };
 
 export type ServicesContent = {
-  intro: string;
+  intro: LocalizedText;
   items: ServiceItem[];
 };
 
 export type PortfolioItem = {
   id: string;
-  title: string;
-  description: string;
+  title: LocalizedText;
+  description: LocalizedText;
   imageUrl: string;
   /**
    * 任意の外部サイトリンク。指定されていない場合は表示しない。
@@ -40,29 +45,29 @@ export type PortfolioItem = {
 };
 
 export type PortfolioContent = {
-  heading: string;
-  subheading: string;
+  heading: LocalizedText;
+  subheading: LocalizedText;
   items: PortfolioItem[];
 };
 
 export type BrandPhilosophyStructureItem = {
   id: string;
   label: string;
-  title: string;
-  description: string;
-  subDescription?: string;
+  title: LocalizedText;
+  description: LocalizedText;
+  subDescription?: LocalizedText;
 };
 
 export type BrandPhilosophySummaryItem = {
   id: string;
   label: string;
-  title: string;
-  description: string;
+  title: LocalizedText;
+  description: LocalizedText;
 };
 
 export type BrandPhilosophyClosingPart = {
   id: string;
-  text: string;
+  text: LocalizedText;
   /**
    * 表示時のスタイル
    * - default: 通常テキスト
@@ -73,27 +78,27 @@ export type BrandPhilosophyClosingPart = {
 };
 
 export type BrandPhilosophyContent = {
-  heading: string;
-  subheading: string;
-  introHeading: string;
-  introParagraphs: string[];
-  structureLabel: string;
-  structureDescription: string;
+  heading: LocalizedText;
+  subheading: LocalizedText;
+  introHeading: LocalizedText;
+  introParagraphs: LocalizedText[];
+  structureLabel: LocalizedText;
+  structureDescription: LocalizedText;
   structureItems: BrandPhilosophyStructureItem[];
-  closingTitle: string;
+  closingTitle: LocalizedText;
   closingDescriptionParts: BrandPhilosophyClosingPart[];
-  summaryLabel: string;
-  summaryDescription: string;
-  summarySupportingText: string;
-  summaryItemsLabel: string;
+  summaryLabel: LocalizedText;
+  summaryDescription: LocalizedText;
+  summarySupportingText: LocalizedText;
+  summaryItemsLabel: LocalizedText;
   summaryItems: BrandPhilosophySummaryItem[];
-  coreValuesLabel: string;
-  coreValues: string[];
+  coreValuesLabel: LocalizedText;
+  coreValues: LocalizedText[];
 };
 
 export type AboutContent = {
-  heading: string;
-  description: string;
+  heading: LocalizedText;
+  description: LocalizedText;
 };
 
 export type LandingContent = {

@@ -1,6 +1,12 @@
 'use client';
 
-import { saveLandingContentAction } from '@/app/actions/landing';
+import {
+  saveAboutSectionAction,
+  saveBrandPhilosophySectionAction,
+  saveHeroSectionAction,
+  savePortfolioMetadataAction,
+  saveServicesSectionAction,
+} from '@/app/actions/landing';
 import { AdminLogoutButton } from '@/components/admin/lp/AdminLogoutButton';
 import { ToasterClient } from '@/components/ui/ToasterClient';
 import type { LandingContent, PortfolioItem } from '@/types/landing';
@@ -129,9 +135,20 @@ export function AdminShell({ initialContent }: AdminShellProps): JSX.Element {
     setSavingSection(section);
     startTransition(async () => {
       try {
-        // refから最新のcontentを取得
-        await saveLandingContentAction(contentRef.current);
-        // サーバー側のデータを再取得して、最新の状態を反映
+        const saveHandlers: Record<ActiveSection, () => Promise<void>> = {
+          hero: () => saveHeroSectionAction(contentRef.current.hero),
+          about: () => saveAboutSectionAction(contentRef.current.about),
+          services: () => saveServicesSectionAction(contentRef.current.services),
+          portfolio: () =>
+            savePortfolioMetadataAction({
+              heading: contentRef.current.portfolio.heading,
+              subheading: contentRef.current.portfolio.subheading,
+            }),
+          brandPhilosophy: () =>
+            saveBrandPhilosophySectionAction(contentRef.current.brandPhilosophy),
+        };
+
+        await saveHandlers[section]();
         router.refresh();
         toast.success('保存しました', {
           description: `${getSectionLabel(section)}の内容を保存しました`,

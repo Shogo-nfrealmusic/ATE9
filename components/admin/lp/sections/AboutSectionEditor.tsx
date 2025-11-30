@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { AboutContent } from '@/types/landing';
 import type { JSX } from 'react';
 import { CharacterCountTextarea } from '../CharacterCountTextarea';
@@ -13,12 +14,27 @@ type AboutSectionEditorProps = {
   isSaving: boolean;
 };
 
+const locales: { value: 'ja' | 'en'; label: string }[] = [
+  { value: 'ja', label: '日本語' },
+  { value: 'en', label: 'English' },
+];
+
 export function AboutSectionEditor({
   about,
   onChange,
   onSave,
   isSaving,
 }: AboutSectionEditorProps): JSX.Element {
+  const updateField = (field: keyof AboutContent, locale: 'ja' | 'en', value: string) => {
+    onChange({
+      ...about,
+      [field]: {
+        ...about[field],
+        [locale]: value,
+      },
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -27,48 +43,65 @@ export function AboutSectionEditor({
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 編集フォーム */}
         <Card>
           <CardHeader>
             <CardTitle>編集</CardTitle>
             <CardDescription>LP の About セクションに表示される内容を編集します</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <CharacterCountTextarea
-              id="heading"
-              label={
-                <>
-                  Heading <span className="text-text-body/70">(見出し)</span>
-                </>
-              }
-              value={about.heading}
-              onChange={(value) =>
-                onChange({
-                  ...about,
-                  heading: value,
-                })
-              }
-              rows={2}
-              placeholder='ATE9 は会社ではない。挑戦者の"家"だ。'
-            />
+            <Tabs defaultValue="ja" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2">
+                {locales.map((locale) => (
+                  <TabsTrigger key={locale.value} value={locale.value}>
+                    {locale.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
 
-            <CharacterCountTextarea
-              id="description"
-              label={
-                <>
-                  Description <span className="text-text-body/70">(説明文)</span>
-                </>
-              }
-              value={about.description}
-              onChange={(value) =>
-                onChange({
-                  ...about,
-                  description: value,
-                })
-              }
-              rows={6}
-              placeholder="ATE9 is not a company..."
-            />
+              {locales.map((locale) => (
+                <TabsContent key={locale.value} value={locale.value} className="space-y-4">
+                  <CharacterCountTextarea
+                    id={`about-heading-${locale.value}`}
+                    label={
+                      <>
+                        Heading{' '}
+                        <span className="text-text-body/70">
+                          {locale.value === 'ja' ? '（見出し - 日本語）' : '(Heading - English)'}
+                        </span>
+                      </>
+                    }
+                    value={about.heading[locale.value] ?? ''}
+                    onChange={(value) => updateField('heading', locale.value, value)}
+                    rows={2}
+                    placeholder={
+                      locale.value === 'ja'
+                        ? 'ATE9 は会社ではない。挑戦者の"家"だ。'
+                        : "ATE9 isn't just a company—it's a home for challengers."
+                    }
+                  />
+
+                  <CharacterCountTextarea
+                    id={`about-description-${locale.value}`}
+                    label={
+                      <>
+                        Description{' '}
+                        <span className="text-text-body/70">
+                          {locale.value === 'ja'
+                            ? '（説明文 - 日本語）'
+                            : '(Description - English)'}
+                        </span>
+                      </>
+                    }
+                    value={about.description[locale.value] ?? ''}
+                    onChange={(value) => updateField('description', locale.value, value)}
+                    rows={6}
+                    placeholder={
+                      locale.value === 'ja' ? 'ATE9は挑戦者の家だ...' : 'ATE9 is not a company...'
+                    }
+                  />
+                </TabsContent>
+              ))}
+            </Tabs>
 
             <div className="flex justify-end pt-4">
               <Button onClick={onSave} disabled={isSaving}>
@@ -78,18 +111,28 @@ export function AboutSectionEditor({
           </CardContent>
         </Card>
 
-        {/* プレビュー */}
         <Card>
           <CardHeader>
             <CardTitle>プレビュー</CardTitle>
-            <CardDescription>編集内容のプレビュー（簡易表示）</CardDescription>
+            <CardDescription>言語ごとの表示イメージ</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="bg-black text-white p-8 rounded-lg space-y-4 min-h-[300px]">
-              <h2 className="text-2xl font-bold">{about.heading || '見出し'}</h2>
-              <div className="w-16 h-0.5 bg-red-600"></div>
-              <p className="text-white/80 leading-relaxed">{about.description || '説明文'}</p>
-            </div>
+          <CardContent className="space-y-6">
+            {locales.map((locale) => (
+              <div
+                key={`preview-${locale.value}`}
+                className="bg-black text-white p-6 rounded-lg space-y-3"
+              >
+                <p className="text-xs uppercase tracking-[0.2em] text-white/50">{locale.label}</p>
+                <h2 className="text-xl font-bold">
+                  {about.heading[locale.value] || (locale.value === 'ja' ? '見出し' : 'Heading')}
+                </h2>
+                <div className="w-16 h-0.5 bg-red-600"></div>
+                <p className="text-white/80 leading-relaxed text-sm">
+                  {about.description[locale.value] ||
+                    (locale.value === 'ja' ? '説明文' : 'Description')}
+                </p>
+              </div>
+            ))}
           </CardContent>
         </Card>
       </div>

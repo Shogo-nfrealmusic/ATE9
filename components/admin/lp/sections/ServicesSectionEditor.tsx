@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { ate9Colors } from '@/config/theme';
 import { cn, generateRandomId } from '@/lib/utils';
@@ -57,6 +58,15 @@ const colorOptions = [
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+const createEmptyServiceItem = (): ServiceItem => ({
+  id: '',
+  slug: '',
+  title: { ja: '', en: '' },
+  description: { ja: '', en: '' },
+  backgroundColor: ate9Colors.redBright,
+  gallery: [],
+});
+
 export function ServicesSectionEditor({
   services,
   portfolioItems,
@@ -67,28 +77,28 @@ export function ServicesSectionEditor({
 }: ServicesSectionEditorProps): JSX.Element {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ServiceItem | null>(null);
-  const [formData, setFormData] = useState<ServiceItem>({
-    id: '',
-    slug: '',
-    title: '',
-    description: '',
-    backgroundColor: ate9Colors.redBright,
-    gallery: [],
-  });
+  const [formData, setFormData] = useState<ServiceItem>(createEmptyServiceItem());
 
   const handleOpenDialog = (item?: ServiceItem) => {
     if (item) {
       setEditingItem(item);
-      setFormData({ ...item, slug: item.slug ?? '' });
+      setFormData({
+        ...item,
+        slug: item.slug ?? '',
+        title: {
+          ja: item.title.ja ?? '',
+          en: item.title.en ?? '',
+        },
+        description: {
+          ja: item.description.ja ?? '',
+          en: item.description.en ?? '',
+        },
+      });
     } else {
       setEditingItem(null);
       setFormData({
+        ...createEmptyServiceItem(),
         id: generateRandomId(),
-        slug: '',
-        title: '',
-        description: '',
-        backgroundColor: ate9Colors.redBright,
-        gallery: [],
       });
     }
     setIsDialogOpen(true);
@@ -105,20 +115,28 @@ export function ServicesSectionEditor({
       toast.error('Slug は英小文字とハイフンのみで入力してください。');
       return;
     }
-    if (!formData.title?.trim()) {
-      toast.error('Title は必須です。');
+    const titleJa = formData.title.ja ?? '';
+    if (!titleJa.trim()) {
+      toast.error('Title (日本語) は必須です。');
       return;
     }
-    if (!formData.description?.trim()) {
-      toast.error('Description は必須です。');
+    const descriptionJa = formData.description.ja ?? '';
+    if (!descriptionJa.trim()) {
+      toast.error('Description (日本語) は必須です。');
       return;
     }
 
     const normalizedItem: ServiceItem = {
       ...formData,
       slug,
-      title: formData.title.trim(),
-      description: formData.description.trim(),
+      title: {
+        ja: titleJa.trim(),
+        en: formData.title.en?.trim() || titleJa.trim(),
+      },
+      description: {
+        ja: descriptionJa.trim(),
+        en: formData.description.en?.trim() || descriptionJa.trim(),
+      },
     };
 
     if (editingItem) {
@@ -173,6 +191,19 @@ export function ServicesSectionEditor({
   const getWorksCount = (serviceId: string | null) =>
     portfolioItems.filter((item) => (item.serviceId ?? null) === (serviceId ?? null)).length;
 
+  const introJa = services.intro.ja ?? '';
+  const introEn = services.intro.en ?? '';
+
+  const handleIntroChange = (locale: 'ja' | 'en', value: string) => {
+    onChange({
+      ...services,
+      intro: {
+        ...services.intro,
+        [locale]: value,
+      },
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -189,18 +220,38 @@ export function ServicesSectionEditor({
           <CardDescription>Services セクションの上部に表示される説明文を編集します</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="intro" className="text-text-headings">
-              Intro Text
-            </Label>
-            <Textarea
-              id="intro"
-              value={services.intro}
-              onChange={(e) => onChange({ ...services, intro: e.target.value })}
-              rows={3}
-            />
-            <p className="text-xs text-muted-foreground">{services.intro.length} 文字</p>
-          </div>
+          <Tabs defaultValue="ja" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="ja">日本語</TabsTrigger>
+              <TabsTrigger value="en">English</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="ja" className="space-y-2">
+              <Label htmlFor="intro_ja" className="text-text-headings">
+                Intro Text <span className="text-text-body/70">(日本語) *</span>
+              </Label>
+              <Textarea
+                id="intro_ja"
+                value={introJa}
+                onChange={(e) => handleIntroChange('ja', e.target.value)}
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">{introJa.length} 文字</p>
+            </TabsContent>
+
+            <TabsContent value="en" className="space-y-2">
+              <Label htmlFor="intro_en" className="text-text-headings">
+                Intro Text <span className="text-text-body/70">(English)</span>
+              </Label>
+              <Textarea
+                id="intro_en"
+                value={introEn}
+                onChange={(e) => handleIntroChange('en', e.target.value)}
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">{introEn.length} 文字</p>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -242,7 +293,7 @@ export function ServicesSectionEditor({
                       {item.slug || '-'}
                     </TableCell>
                     <TableCell className="font-medium text-text-headings">
-                      {item.title || '-'}
+                      {item.title.ja || '-'}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -263,7 +314,7 @@ export function ServicesSectionEditor({
                           onClick={() =>
                             onManageWorks({
                               serviceId: item.id,
-                              serviceTitle: `${item.title} Works`,
+                              serviceTitle: `${item.title.ja || ''} Works`,
                               serviceSlug: item.slug || undefined,
                             })
                           }
@@ -364,17 +415,97 @@ export function ServicesSectionEditor({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="title" className="text-neutral-800">
-                Title *
-              </Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Creative Direction"
-              />
-            </div>
+            <Tabs defaultValue="ja" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="ja">日本語</TabsTrigger>
+                <TabsTrigger value="en">English</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="ja" className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title_ja" className="text-neutral-800">
+                    Title <span className="text-neutral-500">(日本語) *</span>
+                  </Label>
+                  <Input
+                    id="title_ja"
+                    value={formData.title.ja}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        title: {
+                          ...formData.title,
+                          ja: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="クリエイティブディレクション"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description_ja" className="text-neutral-800">
+                    Description <span className="text-neutral-500">(日本語) *</span>
+                  </Label>
+                  <Textarea
+                    id="description_ja"
+                    value={formData.description.ja}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        description: {
+                          ...formData.description,
+                          ja: e.target.value,
+                        },
+                      })
+                    }
+                    rows={4}
+                    placeholder="サービスの説明..."
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="en" className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title_en" className="text-neutral-800">
+                    Title <span className="text-neutral-500">(English)</span>
+                  </Label>
+                  <Input
+                    id="title_en"
+                    value={formData.title.en ?? ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        title: {
+                          ...formData.title,
+                          en: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="Creative Direction"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description_en" className="text-neutral-800">
+                    Description <span className="text-neutral-500">(English)</span>
+                  </Label>
+                  <Textarea
+                    id="description_en"
+                    value={formData.description.en ?? ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        description: {
+                          ...formData.description,
+                          en: e.target.value,
+                        },
+                      })
+                    }
+                    rows={4}
+                    placeholder="Service description..."
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+
             <div className="space-y-2">
               <Label htmlFor="slug" className="text-neutral-800">
                 Slug *
@@ -402,18 +533,6 @@ export function ServicesSectionEditor({
               >
                 英小文字とハイフンのみ。例: creative-production
               </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="description" className="text-neutral-800">
-                Description *
-              </Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                rows={4}
-                placeholder="サービスの説明..."
-              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="backgroundColor" className="text-neutral-800">

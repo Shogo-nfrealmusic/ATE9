@@ -4,15 +4,18 @@ import type { JSX } from 'react';
 
 type SectionHeroProps = {
   content: HeroContent;
+  locale: 'ja' | 'en';
 };
 
-export function SectionHero({ content }: SectionHeroProps): JSX.Element {
-  const headingLines = content.heading.includes('\n')
-    ? content.heading.split('\n')
-    : [content.heading];
-  const subheadingLines = content.subheading.includes('\n')
-    ? content.subheading.split('\n')
-    : [content.subheading];
+export function SectionHero({ content, locale }: SectionHeroProps): JSX.Element {
+  const heading = locale === 'en' ? content.heading.en || content.heading.ja : content.heading.ja;
+  const subheading =
+    locale === 'en' ? content.subheading.en || content.subheading.ja : content.subheading.ja;
+  const ctaLabel =
+    locale === 'en' ? content.ctaLabel.en || content.ctaLabel.ja : content.ctaLabel.ja;
+
+  const headingLines = heading.includes('\n') ? heading.split('\n') : [heading];
+  const subheadingLines = subheading.includes('\n') ? subheading.split('\n') : [subheading];
 
   const rawCtaLink = content.ctaLink?.trim() || '#contact';
   const isExternalCta = rawCtaLink.startsWith('http://') || rawCtaLink.startsWith('https://');
@@ -53,14 +56,14 @@ export function SectionHero({ content }: SectionHeroProps): JSX.Element {
                 rel="noreferrer"
                 className="inline-flex w-full items-center justify-center rounded-full bg-ate9-red px-8 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg shadow-ate9-red/30 transition hover:bg-ate9-red-dark hover:shadow-ate9-red/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:w-auto"
               >
-                {content.ctaLabel}
+                {ctaLabel}
               </a>
             ) : (
               <Link
                 href={rawCtaLink}
                 className="inline-flex w-full items-center justify-center rounded-full bg-ate9-red px-8 py-3 text-sm font-bold uppercase tracking-[0.08em] text-white shadow-lg shadow-ate9-red/30 transition hover:bg-ate9-red-dark hover:shadow-ate9-red/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:w-auto"
               >
-                {content.ctaLabel}
+                {ctaLabel}
               </Link>
             )}
           </div>

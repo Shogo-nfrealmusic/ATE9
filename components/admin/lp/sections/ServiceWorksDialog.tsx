@@ -30,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { cn, generateRandomId } from '@/lib/utils';
 import type { PortfolioItem, ServiceItem } from '@/types/landing';
@@ -63,6 +64,15 @@ type ItemFormState = {
 };
 
 const ensureServiceKey = (value: string | null | undefined) => value ?? null;
+
+const createEmptyPortfolioItem = (serviceId: string | null): PortfolioItem => ({
+  id: generateRandomId(),
+  title: { ja: '', en: '' },
+  description: { ja: '', en: '' },
+  imageUrl: '',
+  linkUrl: '',
+  serviceId,
+});
 
 export function ServiceWorksDialog({
   open,
@@ -124,12 +134,7 @@ export function ServiceWorksDialog({
     setFormState({
       mode: 'create',
       value: {
-        id: generateRandomId(),
-        title: '',
-        description: '',
-        imageUrl: '',
-        linkUrl: '',
-        serviceId: normalizedServiceId,
+        ...createEmptyPortfolioItem(normalizedServiceId),
       },
     });
   };
@@ -139,12 +144,41 @@ export function ServiceWorksDialog({
       mode: 'edit',
       value: {
         ...item,
+        title: {
+          ja: item.title.ja ?? '',
+          en: item.title.en ?? '',
+        },
+        description: {
+          ja: item.description.ja ?? '',
+          en: item.description.en ?? '',
+        },
+        imageUrl: item.imageUrl ?? '',
         linkUrl: item.linkUrl ?? '',
       },
     });
   };
 
-  const handleFormChange = (field: keyof PortfolioItem, value: string) => {
+  const handleLocalizedChange = (
+    field: 'title' | 'description',
+    locale: 'ja' | 'en',
+    value: string,
+  ) => {
+    if (!formState) {
+      return;
+    }
+    setFormState({
+      ...formState,
+      value: {
+        ...formState.value,
+        [field]: {
+          ...formState.value[field],
+          [locale]: value,
+        },
+      },
+    });
+  };
+
+  const handleInputChange = (field: 'imageUrl' | 'linkUrl', value: string) => {
     if (!formState) {
       return;
     }
@@ -163,11 +197,11 @@ export function ServiceWorksDialog({
       return;
     }
 
-    const trimmedTitle = formState.value.title.trim();
+    const trimmedTitleJa = formState.value.title.ja.trim();
     const trimmedImage = formState.value.imageUrl.trim();
 
-    if (!trimmedTitle) {
-      toast.error('Title は必須です。');
+    if (!trimmedTitleJa) {
+      toast.error('Title (日本語) は必須です。');
       return;
     }
     if (!trimmedImage) {
@@ -175,10 +209,18 @@ export function ServiceWorksDialog({
       return;
     }
 
+    const descriptionJa = formState.value.description.ja?.trim() ?? '';
+
     const normalizedItem: PortfolioItem = {
       ...formState.value,
-      title: trimmedTitle,
-      description: formState.value.description?.trim() ?? '',
+      title: {
+        ja: trimmedTitleJa,
+        en: formState.value.title.en?.trim() || trimmedTitleJa,
+      },
+      description: {
+        ja: descriptionJa,
+        en: formState.value.description.en?.trim() || descriptionJa,
+      },
       imageUrl: trimmedImage,
       linkUrl: formState.value.linkUrl?.toString().trim() || undefined,
       serviceId: normalizedServiceId,
@@ -199,14 +241,25 @@ export function ServiceWorksDialog({
   const handleSaveAll = async () => {
     setIsSaving(true);
     try {
-      const payload = localItems.map((item) => ({
-        ...item,
-        title: item.title.trim(),
-        description: item.description?.trim() ?? '',
-        imageUrl: item.imageUrl.trim(),
-        linkUrl: item.linkUrl?.trim() || undefined,
-        serviceId: normalizedServiceId,
-      }));
+      const payload = localItems.map((item) => {
+        const titleJa = item.title.ja.trim();
+        const descriptionJa = item.description.ja?.trim() ?? '';
+        const linkUrl = item.linkUrl?.trim();
+        return {
+          ...item,
+          title: {
+            ja: titleJa,
+            en: item.title.en?.trim() || titleJa,
+          },
+          description: {
+            ja: descriptionJa,
+            en: item.description.en?.trim() || descriptionJa,
+          },
+          imageUrl: item.imageUrl.trim(),
+          linkUrl: linkUrl || undefined,
+          serviceId: normalizedServiceId,
+        };
+      });
 
       const saved = await savePortfolioItemsForServiceAction({
         serviceId: normalizedServiceId,
@@ -260,7 +313,7 @@ export function ServiceWorksDialog({
         serviceId: normalizedServiceId,
         items: nextItems,
       });
-      toast.success(`${item.title} を ${targetService.title} に紐づけました`);
+      toast.success(`${item.title.ja || ''} を ${targetService.title.ja || ''} に紐づけました`);
     } catch (error) {
       toast.error('紐づけに失敗しました', {
         description: error instanceof Error ? error.message : '不明なエラーが発生しました',
@@ -319,7 +372,12 @@ export function ServiceWorksDialog({
                   <div className="flex flex-1 items-start gap-4">
                     {item.imageUrl ? (
                       <div className="relative h-20 w-20 overflow-hidden rounded-xl border border-neutral-200 bg-neutral-100">
-                        <Image src={item.imageUrl} alt={item.title} fill className="object-cover" />
+                        <Image
+                          src={item.imageUrl}
+                          alt={item.title.ja || 'portfolio item'}
+                          fill
+                          className="object-cover"
+                        />
                       </div>
                     ) : (
                       <div className="flex h-20 w-20 items-center justify-center rounded-xl border border-dashed border-neutral-300 bg-neutral-50 text-xs font-medium text-neutral-500">
@@ -327,11 +385,11 @@ export function ServiceWorksDialog({
                       </div>
                     )}
                     <div className="space-y-1">
-                      <p className="text-base font-semibold text-neutral-900">{item.title}</p>
+                      <p className="text-base font-semibold text-neutral-900">
+                        {item.title.ja || '-'}
+                      </p>
                       <p className="text-sm text-neutral-600">
-                        {item.description
-                          ? item.description.slice(0, 96)
-                          : '説明がまだありません。'}
+                        {item.description.ja?.slice(0, 96) || '説明がまだありません。'}
                       </p>
                       <p className="text-xs text-neutral-500">
                         Link:{' '}
@@ -362,7 +420,7 @@ export function ServiceWorksDialog({
                         <SelectContent>
                           {services.map((service) => (
                             <SelectItem key={service.id} value={service.id}>
-                              {service.title}
+                              {service.title.ja || '-'}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -462,7 +520,7 @@ export function ServiceWorksDialog({
                             <div className="relative h-16 w-16 overflow-hidden rounded-md border border-neutral-200 bg-neutral-100">
                               <Image
                                 src={item.imageUrl}
-                                alt={item.title}
+                                alt={item.title.ja || 'portfolio item'}
                                 fill
                                 className="object-cover"
                               />
@@ -474,10 +532,10 @@ export function ServiceWorksDialog({
                           )}
                         </TableCell>
                         <TableCell className="font-semibold text-neutral-900">
-                          {item.title}
+                          {item.title.ja || '-'}
                         </TableCell>
                         <TableCell className="text-sm text-neutral-600">
-                          {item.description ? item.description.slice(0, 48) : '-'}
+                          {item.description.ja?.slice(0, 48) || '-'}
                         </TableCell>
                         <TableCell className="text-sm text-neutral-600">
                           {item.linkUrl ? (
@@ -557,49 +615,100 @@ export function ServiceWorksDialog({
             </div>
 
             {formState ? (
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="mt-4 space-y-4">
+                <Tabs defaultValue="ja" className="space-y-4">
+                  <TabsList>
+                    <TabsTrigger value="ja">日本語</TabsTrigger>
+                    <TabsTrigger value="en">English</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="ja" className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="works-title_ja" className="text-neutral-800">
+                          Title <span className="text-neutral-500">(日本語) *</span>
+                        </Label>
+                        <Input
+                          id="works-title_ja"
+                          value={formState.value.title.ja}
+                          onChange={(e) => handleLocalizedChange('title', 'ja', e.target.value)}
+                          placeholder="プロジェクト名"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="works-image" className="text-neutral-800">
+                          Image URL <span className="text-neutral-500">*</span>
+                        </Label>
+                        <Input
+                          id="works-image"
+                          value={formState.value.imageUrl}
+                          onChange={(e) => handleInputChange('imageUrl', e.target.value)}
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="works-description_ja" className="text-neutral-800">
+                        Description <span className="text-neutral-500">(日本語)</span>
+                      </Label>
+                      <Textarea
+                        id="works-description_ja"
+                        rows={3}
+                        value={formState.value.description.ja}
+                        onChange={(e) => handleLocalizedChange('description', 'ja', e.target.value)}
+                        placeholder="プロジェクトの説明..."
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="en" className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="works-title_en" className="text-neutral-800">
+                          Title <span className="text-neutral-500">(English)</span>
+                        </Label>
+                        <Input
+                          id="works-title_en"
+                          value={formState.value.title.en ?? ''}
+                          onChange={(e) => handleLocalizedChange('title', 'en', e.target.value)}
+                          placeholder="Project Alpha"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="works-image_en" className="text-neutral-800">
+                          Image URL <span className="text-neutral-500">(共通)</span>
+                        </Label>
+                        <Input
+                          id="works-image_en"
+                          value={formState.value.imageUrl}
+                          disabled
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="works-description_en" className="text-neutral-800">
+                        Description <span className="text-neutral-500">(English)</span>
+                      </Label>
+                      <Textarea
+                        id="works-description_en"
+                        rows={3}
+                        value={formState.value.description.en ?? ''}
+                        onChange={(e) => handleLocalizedChange('description', 'en', e.target.value)}
+                        placeholder="Project description..."
+                      />
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
                 <div className="space-y-2">
-                  <Label htmlFor="works-title" className="text-neutral-800">
-                    Title *
-                  </Label>
-                  <Input
-                    id="works-title"
-                    value={formState.value.title}
-                    onChange={(e) => handleFormChange('title', e.target.value)}
-                    placeholder="Project Alpha"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="works-image" className="text-neutral-800">
-                    Image URL *
-                  </Label>
-                  <Input
-                    id="works-image"
-                    value={formState.value.imageUrl}
-                    onChange={(e) => handleFormChange('imageUrl', e.target.value)}
-                    placeholder="https://..."
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="works-description" className="text-neutral-800">
-                    Description
-                  </Label>
-                  <Textarea
-                    id="works-description"
-                    rows={3}
-                    value={formState.value.description}
-                    onChange={(e) => handleFormChange('description', e.target.value)}
-                    placeholder="プロジェクトの説明..."
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="works-link" className="text-neutral-800">
-                    Link URL (任意)
+                    Link URL (任意 - 共通)
                   </Label>
                   <Input
                     id="works-link"
                     value={formState.value.linkUrl ?? ''}
-                    onChange={(e) => handleFormChange('linkUrl', e.target.value)}
+                    onChange={(e) => handleInputChange('linkUrl', e.target.value)}
                     placeholder="https://example.com"
                   />
                 </div>

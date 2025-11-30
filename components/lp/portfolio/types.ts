@@ -1,6 +1,7 @@
-import type { PortfolioItem } from '@/types/landing';
-
-export type PortfolioItemForUI = Pick<
-  PortfolioItem,
-  'id' | 'title' | 'description' | 'imageUrl' | 'linkUrl'
->;
+export type PortfolioItemForUI = {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  linkUrl?: string;
+};

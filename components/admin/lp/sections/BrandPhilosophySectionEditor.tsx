@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { generateRandomId } from '@/lib/utils';
 import type { BrandPhilosophyContent } from '@/types/landing';
@@ -34,22 +35,60 @@ const variantOptions: {
   { value: 'accent', label: 'アクセント（赤）' },
 ];
 
+const locales: { value: 'ja' | 'en'; label: string }[] = [
+  { value: 'ja', label: '日本語' },
+  { value: 'en', label: 'English' },
+];
+
+const emptyLocalizedText = (): { ja: string; en: string } => ({ ja: '', en: '' });
+
+type SimpleLocalizedField =
+  | 'heading'
+  | 'subheading'
+  | 'introHeading'
+  | 'structureLabel'
+  | 'structureDescription'
+  | 'closingTitle'
+  | 'summaryLabel'
+  | 'summaryDescription'
+  | 'summarySupportingText'
+  | 'summaryItemsLabel'
+  | 'coreValuesLabel';
+
 export function BrandPhilosophySectionEditor({
   brandPhilosophy,
   onChange,
   onSave,
   isSaving,
 }: BrandPhilosophySectionEditorProps): JSX.Element {
-  const handleIntroParagraphChange = (index: number, value: string) => {
+  const updateSimpleLocalizedField = (
+    field: SimpleLocalizedField,
+    locale: 'ja' | 'en',
+    value: string,
+  ) => {
+    onChange({
+      ...brandPhilosophy,
+      [field]: {
+        ...(brandPhilosophy[field] as { ja: string; en: string }),
+        [locale]: value,
+      },
+    });
+  };
+
+  const handleIntroParagraphChange = (index: number, locale: 'ja' | 'en', value: string) => {
     const nextParagraphs = [...brandPhilosophy.introParagraphs];
-    nextParagraphs[index] = value;
+    const target = nextParagraphs[index] ?? emptyLocalizedText();
+    nextParagraphs[index] = {
+      ...target,
+      [locale]: value,
+    };
     onChange({ ...brandPhilosophy, introParagraphs: nextParagraphs });
   };
 
   const handleAddIntroParagraph = () => {
     onChange({
       ...brandPhilosophy,
-      introParagraphs: [...brandPhilosophy.introParagraphs, ''],
+      introParagraphs: [...brandPhilosophy.introParagraphs, emptyLocalizedText()],
     });
   };
 
@@ -60,15 +99,33 @@ export function BrandPhilosophySectionEditor({
     });
   };
 
-  const handleStructureItemChange = (
+  const handleStructureItemLabelChange = (id: string, value: string) => {
+    onChange({
+      ...brandPhilosophy,
+      structureItems: brandPhilosophy.structureItems.map((item) =>
+        item.id === id ? { ...item, label: value } : item,
+      ),
+    });
+  };
+
+  const handleStructureItemLocalizedChange = (
     id: string,
-    field: 'label' | 'title' | 'description' | 'subDescription',
+    field: 'title' | 'description' | 'subDescription',
+    locale: 'ja' | 'en',
     value: string,
   ) => {
     onChange({
       ...brandPhilosophy,
       structureItems: brandPhilosophy.structureItems.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item,
+        item.id === id
+          ? {
+              ...item,
+              [field]: {
+                ...(item[field] ?? emptyLocalizedText()),
+                [locale]: value,
+              },
+            }
+          : item,
       ),
     });
   };
@@ -81,8 +138,9 @@ export function BrandPhilosophySectionEditor({
         {
           id: generateRandomId(),
           label: '',
-          title: '',
-          description: '',
+          title: emptyLocalizedText(),
+          description: emptyLocalizedText(),
+          subDescription: emptyLocalizedText(),
         },
       ],
     });
@@ -94,16 +152,34 @@ export function BrandPhilosophySectionEditor({
       structureItems: brandPhilosophy.structureItems.filter((item) => item.id !== id),
     });
   };
-
-  const handleClosingPartChange = (id: string, field: 'text' | 'variant', value: string) => {
+  const handleClosingPartTextChange = (id: string, locale: 'ja' | 'en', value: string) => {
     onChange({
       ...brandPhilosophy,
       closingDescriptionParts: brandPhilosophy.closingDescriptionParts.map((part) =>
         part.id === id
           ? {
               ...part,
-              [field]:
-                field === 'variant' ? (value as (typeof variantOptions)[number]['value']) : value,
+              text: {
+                ...part.text,
+                [locale]: value,
+              },
+            }
+          : part,
+      ),
+    });
+  };
+
+  const handleClosingPartVariantChange = (
+    id: string,
+    value: BrandPhilosophyContent['closingDescriptionParts'][number]['variant'],
+  ) => {
+    onChange({
+      ...brandPhilosophy,
+      closingDescriptionParts: brandPhilosophy.closingDescriptionParts.map((part) =>
+        part.id === id
+          ? {
+              ...part,
+              variant: value,
             }
           : part,
       ),
@@ -115,7 +191,7 @@ export function BrandPhilosophySectionEditor({
       ...brandPhilosophy,
       closingDescriptionParts: [
         ...brandPhilosophy.closingDescriptionParts,
-        { id: generateRandomId(), text: '', variant: 'default' },
+        { id: generateRandomId(), text: emptyLocalizedText(), variant: 'default' },
       ],
     });
   };
@@ -129,15 +205,33 @@ export function BrandPhilosophySectionEditor({
     });
   };
 
-  const handleSummaryItemChange = (
+  const handleSummaryItemLabelChange = (id: string, value: string) => {
+    onChange({
+      ...brandPhilosophy,
+      summaryItems: brandPhilosophy.summaryItems.map((item) =>
+        item.id === id ? { ...item, label: value } : item,
+      ),
+    });
+  };
+
+  const handleSummaryItemLocalizedChange = (
     id: string,
-    field: 'label' | 'title' | 'description',
+    field: 'title' | 'description',
+    locale: 'ja' | 'en',
     value: string,
   ) => {
     onChange({
       ...brandPhilosophy,
       summaryItems: brandPhilosophy.summaryItems.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item,
+        item.id === id
+          ? {
+              ...item,
+              [field]: {
+                ...item[field],
+                [locale]: value,
+              },
+            }
+          : item,
       ),
     });
   };
@@ -147,7 +241,12 @@ export function BrandPhilosophySectionEditor({
       ...brandPhilosophy,
       summaryItems: [
         ...brandPhilosophy.summaryItems,
-        { id: generateRandomId(), label: '', title: '', description: '' },
+        {
+          id: generateRandomId(),
+          label: '',
+          title: emptyLocalizedText(),
+          description: emptyLocalizedText(),
+        },
       ],
     });
   };
@@ -159,16 +258,20 @@ export function BrandPhilosophySectionEditor({
     });
   };
 
-  const handleCoreValueChange = (index: number, value: string) => {
+  const handleCoreValueChange = (index: number, locale: 'ja' | 'en', value: string) => {
     const nextValues = [...brandPhilosophy.coreValues];
-    nextValues[index] = value;
+    const target = nextValues[index] ?? emptyLocalizedText();
+    nextValues[index] = {
+      ...target,
+      [locale]: value,
+    };
     onChange({ ...brandPhilosophy, coreValues: nextValues });
   };
 
   const handleAddCoreValue = () => {
     onChange({
       ...brandPhilosophy,
-      coreValues: [...brandPhilosophy.coreValues, ''],
+      coreValues: [...brandPhilosophy.coreValues, emptyLocalizedText()],
     });
   };
 
@@ -195,31 +298,54 @@ export function BrandPhilosophySectionEditor({
           <CardDescription>セクションの見出しや冒頭コピーを編集します</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="brand-heading">Heading</Label>
-              <Input
-                id="brand-heading"
-                value={brandPhilosophy.heading}
-                onChange={(e) => onChange({ ...brandPhilosophy, heading: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="brand-subheading">Subheading</Label>
-              <Input
-                id="brand-subheading"
-                value={brandPhilosophy.subheading}
-                onChange={(e) => onChange({ ...brandPhilosophy, subheading: e.target.value })}
-              />
-            </div>
-          </div>
-          <CharacterCountTextarea
-            id="brand-intro-heading"
-            label="Intro Heading"
-            value={brandPhilosophy.introHeading}
-            onChange={(value) => onChange({ ...brandPhilosophy, introHeading: value })}
-            rows={3}
-          />
+          <Tabs defaultValue="ja" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              {locales.map((locale) => (
+                <TabsTrigger key={`overview-${locale.value}`} value={locale.value}>
+                  {locale.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {locales.map((locale) => (
+              <TabsContent
+                key={`overview-content-${locale.value}`}
+                value={locale.value}
+                className="space-y-4"
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor={`brand-heading-${locale.value}`}>Heading</Label>
+                    <Input
+                      id={`brand-heading-${locale.value}`}
+                      value={brandPhilosophy.heading[locale.value] ?? ''}
+                      onChange={(e) =>
+                        updateSimpleLocalizedField('heading', locale.value, e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`brand-subheading-${locale.value}`}>Subheading</Label>
+                    <Input
+                      id={`brand-subheading-${locale.value}`}
+                      value={brandPhilosophy.subheading[locale.value] ?? ''}
+                      onChange={(e) =>
+                        updateSimpleLocalizedField('subheading', locale.value, e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+                <CharacterCountTextarea
+                  id={`brand-intro-heading-${locale.value}`}
+                  label="Intro Heading"
+                  value={brandPhilosophy.introHeading[locale.value] ?? ''}
+                  onChange={(value) =>
+                    updateSimpleLocalizedField('introHeading', locale.value, value)
+                  }
+                  rows={3}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -249,11 +375,26 @@ export function BrandPhilosophySectionEditor({
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
-              <Textarea
-                value={paragraph}
-                rows={3}
-                onChange={(e) => handleIntroParagraphChange(index, e.target.value)}
-              />
+              <Tabs defaultValue="ja" className="space-y-2">
+                <TabsList className="grid w-full grid-cols-2">
+                  {locales.map((locale) => (
+                    <TabsTrigger key={`intro-${index}-${locale.value}`} value={locale.value}>
+                      {locale.label}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+                {locales.map((locale) => (
+                  <TabsContent key={`intro-${index}-content-${locale.value}`} value={locale.value}>
+                    <Textarea
+                      value={paragraph[locale.value] ?? ''}
+                      rows={3}
+                      onChange={(e) =>
+                        handleIntroParagraphChange(index, locale.value, e.target.value)
+                      }
+                    />
+                  </TabsContent>
+                ))}
+              </Tabs>
             </div>
           ))}
         </CardContent>
@@ -272,23 +413,42 @@ export function BrandPhilosophySectionEditor({
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="structure-label">ラベル</Label>
-              <Input
-                id="structure-label"
-                value={brandPhilosophy.structureLabel}
-                onChange={(e) => onChange({ ...brandPhilosophy, structureLabel: e.target.value })}
-              />
-            </div>
-            <CharacterCountTextarea
-              id="structure-description"
-              label="説明文"
-              value={brandPhilosophy.structureDescription}
-              onChange={(value) => onChange({ ...brandPhilosophy, structureDescription: value })}
-              rows={3}
-            />
-          </div>
+          <Tabs defaultValue="ja" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              {locales.map((locale) => (
+                <TabsTrigger key={`structure-base-${locale.value}`} value={locale.value}>
+                  {locale.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {locales.map((locale) => (
+              <TabsContent
+                key={`structure-base-content-${locale.value}`}
+                value={locale.value}
+                className="grid gap-4 md:grid-cols-2"
+              >
+                <div className="space-y-2">
+                  <Label htmlFor={`structure-label-${locale.value}`}>ラベル</Label>
+                  <Input
+                    id={`structure-label-${locale.value}`}
+                    value={brandPhilosophy.structureLabel[locale.value] ?? ''}
+                    onChange={(e) =>
+                      updateSimpleLocalizedField('structureLabel', locale.value, e.target.value)
+                    }
+                  />
+                </div>
+                <CharacterCountTextarea
+                  id={`structure-description-${locale.value}`}
+                  label="説明文"
+                  value={brandPhilosophy.structureDescription[locale.value] ?? ''}
+                  onChange={(value) =>
+                    updateSimpleLocalizedField('structureDescription', locale.value, value)
+                  }
+                  rows={3}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
 
           <div className="space-y-4">
             {brandPhilosophy.structureItems.map((item) => (
@@ -308,36 +468,73 @@ export function BrandPhilosophySectionEditor({
                     <Label>Label</Label>
                     <Input
                       value={item.label}
-                      onChange={(e) => handleStructureItemChange(item.id, 'label', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Title</Label>
-                    <Input
-                      value={item.title}
-                      onChange={(e) => handleStructureItemChange(item.id, 'title', e.target.value)}
+                      onChange={(e) => handleStructureItemLabelChange(item.id, e.target.value)}
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Sub Description (任意)</Label>
-                  <Input
-                    value={item.subDescription ?? ''}
-                    onChange={(e) =>
-                      handleStructureItemChange(item.id, 'subDescription', e.target.value)
-                    }
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea
-                    rows={3}
-                    value={item.description}
-                    onChange={(e) =>
-                      handleStructureItemChange(item.id, 'description', e.target.value)
-                    }
-                  />
-                </div>
+                <Tabs defaultValue="ja" className="space-y-2">
+                  <TabsList className="grid w-full grid-cols-2">
+                    {locales.map((locale) => (
+                      <TabsTrigger
+                        key={`structure-${item.id}-${locale.value}`}
+                        value={locale.value}
+                      >
+                        {locale.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {locales.map((locale) => (
+                    <TabsContent
+                      key={`structure-${item.id}-content-${locale.value}`}
+                      value={locale.value}
+                      className="space-y-3"
+                    >
+                      <div className="space-y-2">
+                        <Label>Title</Label>
+                        <Input
+                          value={item.title[locale.value] ?? ''}
+                          onChange={(e) =>
+                            handleStructureItemLocalizedChange(
+                              item.id,
+                              'title',
+                              locale.value,
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Sub Description (任意)</Label>
+                        <Input
+                          value={item.subDescription?.[locale.value] ?? ''}
+                          onChange={(e) =>
+                            handleStructureItemLocalizedChange(
+                              item.id,
+                              'subDescription',
+                              locale.value,
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          rows={3}
+                          value={item.description[locale.value] ?? ''}
+                          onChange={(e) =>
+                            handleStructureItemLocalizedChange(
+                              item.id,
+                              'description',
+                              locale.value,
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
               </div>
             ))}
           </div>
@@ -351,13 +548,28 @@ export function BrandPhilosophySectionEditor({
           <CardDescription>締めのテキストとハイライトを編集します</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <CharacterCountTextarea
-            id="closing-title"
-            label="Closing Title"
-            value={brandPhilosophy.closingTitle}
-            onChange={(value) => onChange({ ...brandPhilosophy, closingTitle: value })}
-            rows={2}
-          />
+          <Tabs defaultValue="ja" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              {locales.map((locale) => (
+                <TabsTrigger key={`closing-title-${locale.value}`} value={locale.value}>
+                  {locale.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {locales.map((locale) => (
+              <TabsContent key={`closing-title-content-${locale.value}`} value={locale.value}>
+                <CharacterCountTextarea
+                  id={`closing-title-${locale.value}`}
+                  label="Closing Title"
+                  value={brandPhilosophy.closingTitle[locale.value] ?? ''}
+                  onChange={(value) =>
+                    updateSimpleLocalizedField('closingTitle', locale.value, value)
+                  }
+                  rows={2}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
           <div className="flex items-center justify-between">
             <Label>Description Parts</Label>
             <Button size="sm" onClick={handleAddClosingPart}>
@@ -368,14 +580,37 @@ export function BrandPhilosophySectionEditor({
           <div className="space-y-3">
             {brandPhilosophy.closingDescriptionParts.map((part) => (
               <div key={part.id} className="grid gap-3 md:grid-cols-[1fr_200px_auto] items-start">
-                <Textarea
-                  rows={2}
-                  value={part.text}
-                  onChange={(e) => handleClosingPartChange(part.id, 'text', e.target.value)}
-                />
+                <Tabs defaultValue="ja" className="space-y-2">
+                  <TabsList className="grid w-full grid-cols-2">
+                    {locales.map((locale) => (
+                      <TabsTrigger key={`closing-${part.id}-${locale.value}`} value={locale.value}>
+                        {locale.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {locales.map((locale) => (
+                    <TabsContent
+                      key={`closing-${part.id}-content-${locale.value}`}
+                      value={locale.value}
+                    >
+                      <Textarea
+                        rows={2}
+                        value={part.text[locale.value] ?? ''}
+                        onChange={(e) =>
+                          handleClosingPartTextChange(part.id, locale.value, e.target.value)
+                        }
+                      />
+                    </TabsContent>
+                  ))}
+                </Tabs>
                 <Select
                   value={part.variant ?? 'default'}
-                  onValueChange={(value) => handleClosingPartChange(part.id, 'variant', value)}
+                  onValueChange={(value) =>
+                    handleClosingPartVariantChange(
+                      part.id,
+                      value as (typeof variantOptions)[number]['value'],
+                    )
+                  }
                 >
                   <SelectTrigger className="h-10">
                     <SelectValue placeholder="Variant" />
@@ -410,40 +645,67 @@ export function BrandPhilosophySectionEditor({
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="summary-label">Summary Label</Label>
-              <Input
-                id="summary-label"
-                value={brandPhilosophy.summaryLabel}
-                onChange={(e) => onChange({ ...brandPhilosophy, summaryLabel: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="summary-items-label">Items Label</Label>
-              <Input
-                id="summary-items-label"
-                value={brandPhilosophy.summaryItemsLabel}
-                onChange={(e) =>
-                  onChange({ ...brandPhilosophy, summaryItemsLabel: e.target.value })
-                }
-              />
-            </div>
-          </div>
-          <CharacterCountTextarea
-            id="summary-description"
-            label="Summary Description"
-            value={brandPhilosophy.summaryDescription}
-            onChange={(value) => onChange({ ...brandPhilosophy, summaryDescription: value })}
-            rows={2}
-          />
-          <CharacterCountTextarea
-            id="summary-supporting"
-            label="Summary Supporting Text"
-            value={brandPhilosophy.summarySupportingText}
-            onChange={(value) => onChange({ ...brandPhilosophy, summarySupportingText: value })}
-            rows={2}
-          />
+          <Tabs defaultValue="ja" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              {locales.map((locale) => (
+                <TabsTrigger key={`summary-base-${locale.value}`} value={locale.value}>
+                  {locale.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {locales.map((locale) => (
+              <TabsContent
+                key={`summary-base-content-${locale.value}`}
+                value={locale.value}
+                className="space-y-4"
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor={`summary-label-${locale.value}`}>Summary Label</Label>
+                    <Input
+                      id={`summary-label-${locale.value}`}
+                      value={brandPhilosophy.summaryLabel[locale.value] ?? ''}
+                      onChange={(e) =>
+                        updateSimpleLocalizedField('summaryLabel', locale.value, e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor={`summary-items-label-${locale.value}`}>Items Label</Label>
+                    <Input
+                      id={`summary-items-label-${locale.value}`}
+                      value={brandPhilosophy.summaryItemsLabel[locale.value] ?? ''}
+                      onChange={(e) =>
+                        updateSimpleLocalizedField(
+                          'summaryItemsLabel',
+                          locale.value,
+                          e.target.value,
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+                <CharacterCountTextarea
+                  id={`summary-description-${locale.value}`}
+                  label="Summary Description"
+                  value={brandPhilosophy.summaryDescription[locale.value] ?? ''}
+                  onChange={(value) =>
+                    updateSimpleLocalizedField('summaryDescription', locale.value, value)
+                  }
+                  rows={2}
+                />
+                <CharacterCountTextarea
+                  id={`summary-supporting-${locale.value}`}
+                  label="Summary Supporting Text"
+                  value={brandPhilosophy.summarySupportingText[locale.value] ?? ''}
+                  onChange={(value) =>
+                    updateSimpleLocalizedField('summarySupportingText', locale.value, value)
+                  }
+                  rows={2}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
 
           <div className="space-y-4">
             {brandPhilosophy.summaryItems.map((item) => (
@@ -463,27 +725,59 @@ export function BrandPhilosophySectionEditor({
                     <Label>Label</Label>
                     <Input
                       value={item.label}
-                      onChange={(e) => handleSummaryItemChange(item.id, 'label', e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label>Title</Label>
-                    <Input
-                      value={item.title}
-                      onChange={(e) => handleSummaryItemChange(item.id, 'title', e.target.value)}
+                      onChange={(e) => handleSummaryItemLabelChange(item.id, e.target.value)}
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea
-                    rows={2}
-                    value={item.description}
-                    onChange={(e) =>
-                      handleSummaryItemChange(item.id, 'description', e.target.value)
-                    }
-                  />
-                </div>
+                <Tabs defaultValue="ja" className="space-y-2">
+                  <TabsList className="grid w-full grid-cols-2">
+                    {locales.map((locale) => (
+                      <TabsTrigger
+                        key={`summary-item-${item.id}-${locale.value}`}
+                        value={locale.value}
+                      >
+                        {locale.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {locales.map((locale) => (
+                    <TabsContent
+                      key={`summary-item-${item.id}-content-${locale.value}`}
+                      value={locale.value}
+                      className="space-y-2"
+                    >
+                      <div className="space-y-2">
+                        <Label>Title</Label>
+                        <Input
+                          value={item.title[locale.value] ?? ''}
+                          onChange={(e) =>
+                            handleSummaryItemLocalizedChange(
+                              item.id,
+                              'title',
+                              locale.value,
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea
+                          rows={2}
+                          value={item.description[locale.value] ?? ''}
+                          onChange={(e) =>
+                            handleSummaryItemLocalizedChange(
+                              item.id,
+                              'description',
+                              locale.value,
+                              e.target.value,
+                            )
+                          }
+                        />
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
               </div>
             ))}
           </div>
@@ -503,24 +797,59 @@ export function BrandPhilosophySectionEditor({
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="core-values-label">セクションラベル</Label>
-            <Input
-              id="core-values-label"
-              value={brandPhilosophy.coreValuesLabel}
-              onChange={(e) => onChange({ ...brandPhilosophy, coreValuesLabel: e.target.value })}
-            />
-          </div>
+          <Tabs defaultValue="ja" className="space-y-2">
+            <TabsList className="grid w-full grid-cols-2">
+              {locales.map((locale) => (
+                <TabsTrigger key={`core-label-${locale.value}`} value={locale.value}>
+                  {locale.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+            {locales.map((locale) => (
+              <TabsContent key={`core-label-content-${locale.value}`} value={locale.value}>
+                <Label htmlFor={`core-values-label-${locale.value}`}>セクションラベル</Label>
+                <Input
+                  id={`core-values-label-${locale.value}`}
+                  value={brandPhilosophy.coreValuesLabel[locale.value] ?? ''}
+                  onChange={(e) =>
+                    updateSimpleLocalizedField('coreValuesLabel', locale.value, e.target.value)
+                  }
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
           <div className="space-y-3">
             {brandPhilosophy.coreValues.map((value, index) => (
-              <div key={`core-value-${index}`} className="flex gap-3">
-                <Input
-                  value={value}
-                  onChange={(e) => handleCoreValueChange(index, e.target.value)}
-                />
-                <Button variant="ghost" size="sm" onClick={() => handleRemoveCoreValue(index)}>
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+              <div
+                key={`core-value-${index}`}
+                className="rounded-lg border border-white/10 p-3 space-y-2"
+              >
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold text-white/80">Value {index + 1}</Label>
+                  <Button variant="ghost" size="sm" onClick={() => handleRemoveCoreValue(index)}>
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Tabs defaultValue="ja" className="space-y-2">
+                  <TabsList className="grid w-full grid-cols-2">
+                    {locales.map((locale) => (
+                      <TabsTrigger key={`core-value-${index}-${locale.value}`} value={locale.value}>
+                        {locale.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {locales.map((locale) => (
+                    <TabsContent
+                      key={`core-value-${index}-content-${locale.value}`}
+                      value={locale.value}
+                    >
+                      <Input
+                        value={value[locale.value] ?? ''}
+                        onChange={(e) => handleCoreValueChange(index, locale.value, e.target.value)}
+                      />
+                    </TabsContent>
+                  ))}
+                </Tabs>
               </div>
             ))}
           </div>
