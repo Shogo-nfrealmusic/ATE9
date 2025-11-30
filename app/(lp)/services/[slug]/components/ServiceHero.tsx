@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- Supabase images are served directly without optimization. */
 import { IMAGE_FALLBACK_PIXEL, buildRenderImageUrl } from '@/lib/images';
 import type { ServiceDetail } from '@/services/site/service-detail';
+import type { LocalizedText } from '@/types/landing';
 import type { JSX } from 'react';
 
 /**
@@ -11,7 +12,15 @@ import type { JSX } from 'react';
  */
 const IMAGE_PLACEHOLDER = IMAGE_FALLBACK_PIXEL;
 
-export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Element {
+type ServiceHeroProps = {
+  service: ServiceDetail;
+  locale: 'ja' | 'en';
+};
+
+const pickLocalized = (value: LocalizedText, locale: 'ja' | 'en'): string =>
+  locale === 'en' ? value.en || value.ja : value.ja;
+
+export function ServiceHero({ service, locale }: ServiceHeroProps): JSX.Element {
   const gradientStyle = {
     backgroundImage: `radial-gradient(circle at top, ${service.backgroundColor} 0%, rgba(0,0,0,0.65) 45%, rgba(0,0,0,0.95) 100%)`,
   };
@@ -22,6 +31,8 @@ export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Elemen
       : [];
   const gallery = service.gallery.slice(0, 4);
   const [primaryImage, ...secondaryImages] = gallery;
+  const title = pickLocalized(service.title, locale);
+  const description = pickLocalized(service.description, locale);
 
   return (
     <section className="relative overflow-hidden border-b border-white/10" style={gradientStyle}>
@@ -30,9 +41,9 @@ export function ServiceHero({ service }: { service: ServiceDetail }): JSX.Elemen
         <div className="flex-1 space-y-6">
           <p className="text-xs uppercase tracking-[0.5em] text-white/60">Services</p>
           <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-            {service.title}
+            {title}
           </h1>
-          <p className="max-w-2xl text-base text-white/80 sm:text-lg">{service.description}</p>
+          <p className="max-w-2xl text-base text-white/80 sm:text-lg">{description}</p>
           {highlights.length > 0 && (
             <ul className="mt-6 space-y-3 text-sm text-white/80">
               {highlights.map((highlight, index) => (

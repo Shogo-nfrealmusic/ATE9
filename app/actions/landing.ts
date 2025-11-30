@@ -1,27 +1,106 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/client';
-import { saveLandingContent, savePortfolioItemsForService } from '@/services/cms/landing';
-import type { LandingContent, PortfolioItem } from '@/types/landing';
+import {
+  saveAboutSectionToDb,
+  saveBrandPhilosophySectionToDb,
+  saveHeroToDb,
+  savePortfolioItemsForService,
+  savePortfolioMetadataToDb,
+  saveServicesToDb,
+} from '@/services/cms/landing';
+import type {
+  AboutContent,
+  BrandPhilosophyContent,
+  HeroContent,
+  PortfolioContent,
+  PortfolioItem,
+  ServicesContent,
+} from '@/types/landing';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 
-/**
- * ランディングページのコンテンツを保存し、キャッシュを無効化するサーバーアクション
- */
-export async function saveLandingContentAction(content: LandingContent): Promise<LandingContent> {
+async function fetchServiceSlugs(supabase: SupabaseClient): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('lp_service_items')
+    .select('slug')
+    .order('slug', { ascending: true });
+
+  if (error) {
+    console.error('[fetchServiceSlugs] failed', error);
+    throw new Error(`service-slugs: ${error.message}`);
+  }
+
+  return (data ?? [])
+    .map((row) => row.slug ?? null)
+    .filter((slug): slug is string => Boolean(slug));
+}
+
+function revalidateCommonPaths(): void {
+  revalidatePath('/', 'page');
+  revalidatePath('/admin/dashboard', 'page');
+}
+
+export async function saveHeroSectionAction(hero: HeroContent): Promise<void> {
   const supabase = createServerSupabaseClient();
-
   try {
-    const saved = await saveLandingContent({ supabase, content });
-
-    // LPページのキャッシュを無効化（本番環境でも反映されるように）
-    revalidatePath('/', 'page');
-    // admin画面のキャッシュも無効化（保存後に最新データが表示されるように）
-    revalidatePath('/admin/dashboard', 'page');
-
-    return saved;
+    await saveHeroToDb(supabase, hero);
+    revalidateCommonPaths();
   } catch (error) {
-    console.error('[saveLandingContentAction] failed', error);
+    console.error('[saveHeroSectionAction] failed', error);
+    throw error;
+  }
+}
+
+export async function saveAboutSectionAction(about: AboutContent): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  try {
+    await saveAboutSectionToDb(supabase, about);
+    revalidateCommonPaths();
+  } catch (error) {
+    console.error('[saveAboutSectionAction] failed', error);
+    throw error;
+  }
+}
+
+export async function saveBrandPhilosophySectionAction(
+  brandPhilosophy: BrandPhilosophyContent,
+): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  try {
+    await saveBrandPhilosophySectionToDb(supabase, brandPhilosophy);
+    revalidateCommonPaths();
+  } catch (error) {
+    console.error('[saveBrandPhilosophySectionAction] failed', error);
+    throw error;
+  }
+}
+
+export async function saveServicesSectionAction(services: ServicesContent): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  try {
+    const beforeSlugs = await fetchServiceSlugs(supabase);
+    await saveServicesToDb(supabase, services);
+    const afterSlugs = await fetchServiceSlugs(supabase);
+    const slugsToRevalidate = new Set([...beforeSlugs, ...afterSlugs]);
+
+    slugsToRevalidate.forEach((slug) => revalidatePath(`/services/${slug}`, 'page'));
+    revalidateCommonPaths();
+  } catch (error) {
+    console.error('[saveServicesSectionAction] failed', error);
+    throw error;
+  }
+}
+
+export async function savePortfolioMetadataAction(
+  portfolio: Pick<PortfolioContent, 'heading' | 'subheading'>,
+): Promise<void> {
+  const supabase = createServerSupabaseClient();
+  try {
+    await savePortfolioMetadataToDb(supabase, portfolio);
+    revalidateCommonPaths();
+  } catch (error) {
+    console.error('[savePortfolioMetadataAction] failed', error);
     throw error;
   }
 }

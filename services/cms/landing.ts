@@ -1,9 +1,13 @@
 import { createServerSupabaseClient } from '@/lib/supabase/client';
 import type {
   AboutContent,
+  BrandPhilosophyClosingPart,
   BrandPhilosophyContent,
+  BrandPhilosophyStructureItem,
+  BrandPhilosophySummaryItem,
   HeroContent,
   LandingContent,
+  LocalizedText,
   PortfolioContent,
   PortfolioItem,
   ServiceItem,
@@ -15,28 +19,48 @@ const ROW_ID = 'default';
 
 const FALLBACK_CONTENT: LandingContent = {
   hero: {
-    heading: '夢なんて願わない。俺たちは、喰らって叶える。',
-    subheading:
-      "We don't wish for dreams. We devour them to achieve them. ATE9 is a tribe of limit-breakers, a movement of challengers. We exist to break limits, feeding on dreams and turning them into flesh and blood to move the world.",
-    ctaLabel: 'Contact',
+    heading: {
+      ja: '夢なんて願わない。俺たちは、喰らって叶える。',
+      en: "We don't wish for dreams. We devour them to achieve them.",
+    },
+    subheading: {
+      ja: "We don't wish for dreams. We devour them to achieve them. ATE9 is a tribe of limit-breakers, a movement of challengers. We exist to break limits, feeding on dreams and turning them into flesh and blood to move the world.",
+      en: "We don't wish for dreams. We devour them to achieve them. ATE9 is a tribe of limit-breakers, a movement of challengers. We exist to break limits, feeding on dreams and turning them into flesh and blood to move the world.",
+    },
+    ctaLabel: {
+      ja: 'Contact',
+      en: 'Contact',
+    },
     ctaLink: '#contact',
     imageUrl: '',
   },
   about: {
-    heading: 'ATE9 は会社ではない。挑戦者の"家"だ。',
-    description:
-      "ATE9 is not a company. It's a \"HOME\" for challengers. A is for Ace, T is for Top, E is for Evolve, Elevate, and Empower. The '9' represents the limits we are destined to devour, pushing beyond what's possible to redefine reality itself.",
+    heading: {
+      ja: 'ATE9 は会社ではない。挑戦者の"家"だ。',
+      en: "ATE9 isn't just a company—it's a home for challengers.",
+    },
+    description: {
+      ja: "ATE9 is not a company. It's a \"HOME\" for challengers. A is for Ace, T is for Top, E is for Evolve, Elevate, and Empower. The '9' represents the limits we are destined to devour, pushing beyond what's possible to redefine reality itself.",
+      en: "ATE9 is not a company. It's a \"HOME\" for challengers. A is for Ace, T is for Top, E is for Evolve, Elevate, and Empower. The '9' represents the limits we are destined to devour, pushing beyond what's possible to redefine reality itself.",
+    },
   },
   services: {
-    intro:
-      'We are a full-service creative agency specializing in visual content, motion graphics, and interactive experiences for the digital age.',
+    intro: {
+      ja: 'We are a full-service creative agency specializing in visual content, motion graphics, and interactive experiences for the digital age.',
+      en: 'We are a full-service creative agency specializing in visual content, motion graphics, and interactive experiences for the digital age.',
+    },
     items: [
       {
         id: 'creative-production',
         slug: 'creative-production',
-        title: 'Creative Production & Visual Design',
-        description:
-          'We are a full-service creative agency specializing in visual content, motion graphics, and interactive experiences for the digital age. Elevate your brand with our innovative solutions.',
+        title: {
+          ja: 'Creative Production & Visual Design',
+          en: 'Creative Production & Visual Design',
+        },
+        description: {
+          ja: 'We are a full-service creative agency specializing in visual content, motion graphics, and interactive experiences for the digital age. Elevate your brand with our innovative solutions.',
+          en: 'We are a full-service creative agency specializing in visual content, motion graphics, and interactive experiences for the digital age. Elevate your brand with our innovative solutions.',
+        },
         backgroundColor: '#F2426D',
         gallery: [
           'https://lh3.googleusercontent.com/aida-public/AB6AXuAxr-8iBAHDhLLfZuVWOXQvRI3RkD5YQeqsi6_ZKE076VGl29r-QyfJOMoZyvPvoAfuhzxU-3Ti0Qf_wnPSvffSU09iBmwZFuLIMpSMtOxrDMWkRj4qMZjFb5Sa3gKRrzOq3_n3GIhZUmVRul5ypCQBYpBnepXJrWB3ew9KHurAYKllqc949T8fluPQHVN3mCjIxTcRXp17kOweHwSMAh5VP2sQABUvv1k1W6CGo1fd-DJE7_YnST7Cq6i35N5UR3EkIc9SQfmSVNo',
@@ -50,9 +74,14 @@ const FALLBACK_CONTENT: LandingContent = {
       {
         id: 'brand-strategy',
         slug: 'brand-strategy',
-        title: 'Brand Strategy & Identity',
-        description:
-          'We help businesses build strong, memorable brands that resonate with their target audience. From logo design to comprehensive brand guidelines, we create cohesive visual identities.',
+        title: {
+          ja: 'Brand Strategy & Identity',
+          en: 'Brand Strategy & Identity',
+        },
+        description: {
+          ja: 'We help businesses build strong, memorable brands that resonate with their target audience. From logo design to comprehensive brand guidelines, we create cohesive visual identities.',
+          en: 'We help businesses build strong, memorable brands that resonate with their target audience. From logo design to comprehensive brand guidelines, we create cohesive visual identities.',
+        },
         backgroundColor: '#E4EEFA',
         gallery: [
           'https://lh3.googleusercontent.com/aida-public/AB6AXuDcIgelrIJrVYREYU3mJWRQoN0k5l6xI69V-zUbhU7galVQISVb2SDTvYU8nddUD72cbh5f_i-dRfy91G86bKDr7y9dVprvu0bQ2CPvwLceE5A2fyqwwW6beLkV-oFzGbQ8J_tjR20nuiTnzIgVwXwNsOX4ZCm3C4P8JdrGYk4bt2b6k6MEkuypriTg9p5OIkrrhvEfoPNg29xOwm5lj0Xzma9TNQ4DUv4dh3Rblkkbqw9ehIWFi4FK_rbF0FAdOzwPF49VRTxirBw',
@@ -61,9 +90,14 @@ const FALLBACK_CONTENT: LandingContent = {
       {
         id: 'digital-experience',
         slug: 'digital-experience',
-        title: 'Digital Experience Design',
-        description:
-          'Creating intuitive and engaging digital experiences that users love. We combine user research, design thinking, and cutting-edge technology to deliver exceptional results.',
+        title: {
+          ja: 'Digital Experience Design',
+          en: 'Digital Experience Design',
+        },
+        description: {
+          ja: 'Creating intuitive and engaging digital experiences that users love. We combine user research, design thinking, and cutting-edge technology to deliver exceptional results.',
+          en: 'Creating intuitive and engaging digital experiences that users love. We combine user research, design thinking, and cutting-edge technology to deliver exceptional results.',
+        },
         backgroundColor: '#F0F5FF',
         gallery: [
           'https://lh3.googleusercontent.com/aida-public/AB6AXuBFjoonk0jREp72pVriB1yhJ-iqPtPIXBEacYNDL_F53CHi3SCRhkpnvmVvJFxD13MNSqclmjWf5k7VYwFsGgksYFdWeys0iAmmYK2tMg9C_TSW-8LQIsajWn6HkLFOMpMEjQj1eWsJQxUONNoZNuCNKKK4hyviEZYd_nVNJKmXM29vbiL9AniUEyCbVeZthACstlgfT6vC9rWT2ZWLScl_hhqXHGGjT4ERw9MU5ISu43cQL4JA-tASQPDjNNHGXXKgwt3ovzGj94g',
@@ -72,15 +106,26 @@ const FALLBACK_CONTENT: LandingContent = {
     ],
   },
   portfolio: {
-    heading: 'Our Portfolio',
-    subheading:
-      "A curated selection of our past work. See how we've helped businesses like yours succeed.",
+    heading: {
+      ja: 'Our Portfolio',
+      en: 'Our Portfolio',
+    },
+    subheading: {
+      ja: "A curated selection of our past work. See how we've helped businesses like yours succeed.",
+      en: "A curated selection of our past work. See how we've helped businesses like yours succeed.",
+    },
     items: [
       {
         id: 'fintech',
         serviceId: 'creative-production',
-        title: 'Fintech Platform',
-        description: 'A comprehensive UI/UX redesign for a leading financial services provider.',
+        title: {
+          ja: 'Fintech Platform',
+          en: 'Fintech Platform',
+        },
+        description: {
+          ja: 'A comprehensive UI/UX redesign for a leading financial services provider.',
+          en: 'A comprehensive UI/UX redesign for a leading financial services provider.',
+        },
         imageUrl:
           'https://lh3.googleusercontent.com/aida-public/AB6AXuCQQzM5R243n-aMSc-RmkjKvsF2m_DhSg7q82ekuKRJSy5Dou9eUcyRhQXwHFyRmDtV0WJvtopMpBV41j5CvoaOFVf-qdU6z3clYAa5hsEAZx5rEAilLN2DWdra3PzHFGykTUueS0dnvLpTVKg94MPRbb7pRLk57u35mmLZAtOtF5_xZNrfeqDtV8am8Lt0-MJdoy9jv3o9ezRFwsqpSRXuahQXsY5krHBfQsm67HprJ1WiZAQO-i0GLvaaaCrusVset95Md4qx9aw',
         linkUrl: 'https://example.com/fintech',
@@ -88,8 +133,14 @@ const FALLBACK_CONTENT: LandingContent = {
       {
         id: 'ecommerce',
         serviceId: 'digital-experience',
-        title: 'E-commerce App',
-        description: 'Developed a high-conversion mobile shopping experience from the ground up.',
+        title: {
+          ja: 'E-commerce App',
+          en: 'E-commerce App',
+        },
+        description: {
+          ja: 'Developed a high-conversion mobile shopping experience from the ground up.',
+          en: 'Developed a high-conversion mobile shopping experience from the ground up.',
+        },
         imageUrl:
           'https://lh3.googleusercontent.com/aida-public/AB6AXuB-TYs9oD4RQ3n-jAcoiJxNaKs6wtAnvoIN9f4L5B-W2tFjqEe73lOyhotHKjc7xxlhcuevgWLP5urL0dJZbaxlRQ9VaUmbuvjztMFgO66AP2Mx49vTa5Mqn9ghUxi73KQZM9SAN_F1wEz6zD5737IylAR2CPCtX9_unGGp74WdT9TjdfEd5atDrVu1y5yXaZsYjUkd7N8VNRwxqtMGB5exXmh3rlmbXVv3lcqZhXJRZgdfvQdFskObRkcpOc533lijd84K-FCpJwE',
         linkUrl: 'https://example.com/ecommerce',
@@ -97,9 +148,14 @@ const FALLBACK_CONTENT: LandingContent = {
       {
         id: 'wellness',
         serviceId: 'brand-strategy',
-        title: 'Wellness Tracker',
-        description:
-          'Designed and built a mobile app for tracking fitness goals and mental well-being.',
+        title: {
+          ja: 'Wellness Tracker',
+          en: 'Wellness Tracker',
+        },
+        description: {
+          ja: 'Designed and built a mobile app for tracking fitness goals and mental well-being.',
+          en: 'Designed and built a mobile app for tracking fitness goals and mental well-being.',
+        },
         imageUrl:
           'https://lh3.googleusercontent.com/aida-public/AB6AXuDCXa5ktZu8QhgmqHmDpad-6M9xivpINd8m1P7Ll04ZGMKrBOwW2n9k6IYPfPmqD37xxezRVeeyhWzuyYTkdQRKxJ5o-9sFHSsg13oeOily1p5mgeDC_OGbhBUbfN1OwAH8Rp-jTqy5stb0O9yHFKahvie9Env96k1UJt78WsZTFBNsjk8sUbIwtbJ9gOJcj87L92lKMMQpBjJodp4-iQGFyLn_TS70acEIIP9Kx2fNtyxAyxeOmZ_RszWJ0AzhoSupXKnnyzhBm5g',
         linkUrl: 'https://example.com/wellness',
@@ -107,8 +163,14 @@ const FALLBACK_CONTENT: LandingContent = {
       {
         id: 'saas',
         serviceId: 'digital-experience',
-        title: 'SaaS Dashboard',
-        description: 'An intuitive analytics dashboard for a B2B software-as-a-service company.',
+        title: {
+          ja: 'SaaS Dashboard',
+          en: 'SaaS Dashboard',
+        },
+        description: {
+          ja: 'An intuitive analytics dashboard for a B2B software-as-a-service company.',
+          en: 'An intuitive analytics dashboard for a B2B software-as-a-service company.',
+        },
         imageUrl:
           'https://lh3.googleusercontent.com/aida-public/AB6AXuAXeBO2MBk93DK4vLoTfhTYFvnbdBx-aZoC0kL9Sx_aYwo0wLQL5dAE1H2vb_XInCF0KmX_0NX5sxxhsumO4y6elxydzDJQoZ4YKhjFZ7UyadsP7IygOWFIeN3hxLF3XOXjz-g4gsMhIY_TYwCexdr3qT194-W9ovd4OBNbm-KIgN8VxpFEwVKkv54jOKWv7SQzWH6fK1atqBp_Nsd2iIj1NLzI5jkU0cO1vDkDlNliWXiVLjpBWarRwEjQxHbjpdcSdb6FFu0lMfg',
         linkUrl: 'https://example.com/saas',
@@ -116,122 +178,206 @@ const FALLBACK_CONTENT: LandingContent = {
     ],
   },
   brandPhilosophy: {
-    heading: 'Brand Philosophy',
-    subheading: '私たちは何者か',
-    introHeading: '「夢なんて願わない。俺たちは、喰らって叶える。」',
+    heading: { ja: 'Brand Philosophy', en: 'Brand Philosophy' },
+    subheading: { ja: '私たちは何者か', en: 'Who we are' },
+    introHeading: {
+      ja: '「夢なんて願わない。俺たちは、喰らって叶える。」',
+      en: '“We devour dreams to make them real.”',
+    },
     introParagraphs: [
-      'ATE9は、チャンスを待つブランドではない。夢を食らい、限界を超え、世界を変える。',
-      '理想は願うものではなく、自らの手で飲み込み、現実にするものだ。',
+      {
+        ja: 'ATE9は、チャンスを待つブランドではない。夢を食らい、限界を超え、世界を変える。',
+        en: 'ATE9 does not wait for chances—we devour dreams, surpass limits, and change the world.',
+      },
+      {
+        ja: '理想は願うものではなく、自らの手で飲み込み、現実にするものだ。',
+        en: 'Ideals are not meant to be wished for, but seized and made real.',
+      },
     ],
-    structureLabel: 'Structure',
-    structureDescription:
-      'ATE = 腐った常識を打ち破り、世界を貪欲に変えていくための「始まりのコード」。',
+    structureLabel: { ja: 'Structure', en: 'Structure' },
+    structureDescription: {
+      ja: 'ATE = 腐った常識を打ち破り、世界を貪欲に変えていくための「始まりのコード」。',
+      en: 'ATE is the starting code to shatter stale norms and relentlessly reshape the world.',
+    },
     structureItems: [
       {
         id: 'structure-ace',
         label: 'A',
-        title: '= Ace（始まり）',
-        description: '最初に動く者。誰よりも早く挑戦し、道を切り拓くリーダー。',
+        title: { ja: '= Ace（始まり）', en: '= Ace (Beginning)' },
+        description: {
+          ja: '最初に動く者。誰よりも早く挑戦し、道を切り拓くリーダー。',
+          en: 'Moves first—challenging before anyone else and blazing trails.',
+        },
       },
       {
         id: 'structure-top',
         label: 'T',
-        title: '= Top（頂点）',
-        description: '中途半端では終わらない。どんな障壁も越え、「極み」へと突き進む者。',
+        title: { ja: '= Top（頂点）', en: '= Top (Pinnacle)' },
+        description: {
+          ja: '中途半端では終わらない。どんな障壁も越え、「極み」へと突き進む者。',
+          en: 'Never stops halfway. Surpasses every barrier to reach the pinnacle.',
+        },
       },
       {
         id: 'structure-evolve',
         label: 'E',
-        title: '= Evolve / Elevate / Empower',
-        subDescription: '（進化・高める・力を与える）',
-        description:
-          '成功で終わらず、常に進化を求め、仲間とともに高まり合い、世界に影響を与えていく。',
+        title: { ja: '= Evolve / Elevate / Empower', en: '= Evolve / Elevate / Empower' },
+        subDescription: { ja: '（進化・高める・力を与える）', en: '(Evolve / Elevate / Empower)' },
+        description: {
+          ja: '成功で終わらず、常に進化を求め、仲間とともに高まり合い、世界に影響を与えていく。',
+          en: 'Never settles at success; always evolves, elevates, and empowers allies to impact the world.',
+        },
+      },
+      {
+        id: 'structure-9',
+        label: '9',
+        title: { ja: '= 常識や限界を「喰らう」視点', en: '= A perspective that devours limits' },
+        description: {
+          ja: '夢を喰らい、限界を喰らい、世界の枠組みそのものを更新していく意思。',
+          en: 'A will that devours dreams and limits to rewrite the world’s framework.',
+        },
       },
     ],
-    closingTitle: 'ATE9 = Ate Nine = 「限界（9）を食らった存在」。',
+    closingTitle: {
+      ja: 'ATE9 = Ate Nine = 「限界（9）を食らった存在」。',
+      en: 'ATE9 = Ate Nine = Those who devour the limit (9).',
+    },
     closingDescriptionParts: [
-      { id: 'closing-1', text: '8（＝無限の仲間たち）', variant: 'primary' },
-      { id: 'closing-2', text: ' × ', variant: 'default' },
-      { id: 'closing-3', text: '9（＝常識や限界）', variant: 'accent' },
+      {
+        id: 'closing-1',
+        text: { ja: '8（＝無限の仲間たち）', en: '8 (Infinite allies)' },
+        variant: 'primary',
+      },
+      { id: 'closing-2', text: { ja: ' × ', en: ' × ' }, variant: 'default' },
+      {
+        id: 'closing-3',
+        text: { ja: '9（＝常識や限界）', en: '9 (Limits and norms)' },
+        variant: 'accent',
+      },
       {
         id: 'closing-4',
-        text: ' を超えていく。俺たちは、常識を打ち破る。時代を動かす。未来を創る。',
+        text: {
+          ja: ' を超えていく。俺たちは、常識を打ち破る。時代を動かす。未来を創る。',
+          en: 'We transcend them—breaking norms, moving eras, and creating the future.',
+        },
         variant: 'default',
       },
     ],
-    summaryLabel: 'Philosophy Summary',
-    summaryDescription: 'シンボルの「9」は、常識を超える視点。',
-    summarySupportingText: '宇宙的でポジティブな反逆。世界の枠組みそのものに挑む意思を表す。',
-    summaryItemsLabel: 'A / T / E / 9',
+    summaryLabel: { ja: 'Philosophy Summary', en: 'Philosophy Summary' },
+    summaryDescription: {
+      ja: 'シンボルの「9」は、常識を超える視点。',
+      en: 'The symbol “9” represents a perspective that transcends the ordinary.',
+    },
+    summarySupportingText: {
+      ja: '宇宙的でポジティブな反逆。世界の枠組みそのものに挑む意思を表す。',
+      en: 'A cosmic, positive rebellion—a will that challenges the framework of the world.',
+    },
+    summaryItemsLabel: { ja: 'A / T / E / 9', en: 'A / T / E / 9' },
     summaryItems: [
       {
         id: 'summary-a',
         label: 'A',
-        title: '= Ace（始まり）',
-        description: '最初に動く者。誰よりも早く挑戦し、道を切り拓くリーダー。',
+        title: { ja: '= Ace（始まり）', en: '= Ace (Beginning)' },
+        description: {
+          ja: '最初に動く者。誰よりも早く挑戦し、道を切り拓くリーダー。',
+          en: 'Moves first and opens new paths ahead of everyone else.',
+        },
       },
       {
         id: 'summary-t',
         label: 'T',
-        title: '= Top（頂点）',
-        description: '中途半端では終わらない。どんな障壁も越え、「極み」へと突き進む者。',
+        title: { ja: '= Top（頂点）', en: '= Top (Pinnacle)' },
+        description: {
+          ja: '中途半端では終わらない。どんな障壁も越え、「極み」へと突き進む者。',
+          en: 'Does not stop halfway—crosses every barrier toward the ultimate peak.',
+        },
       },
       {
         id: 'summary-e',
         label: 'E',
-        title: '= Evolve / Elevate / Empower',
-        description:
-          '成功で終わらず、常に進化を求め、仲間とともに高まり合い、世界に影響を与えていく。',
+        title: { ja: '= Evolve / Elevate / Empower', en: '= Evolve / Elevate / Empower' },
+        description: {
+          ja: '成功で終わらず、常に進化を求め、仲間とともに高まり合い、世界に影響を与えていく。',
+          en: 'Keeps evolving and empowering allies to elevate the world.',
+        },
       },
       {
         id: 'summary-9',
         label: '9',
-        title: '= 常識や限界を「喰らう」視点',
-        description: '夢を喰らい、限界を喰らい、世界の枠組みそのものを更新していく意思。',
+        title: { ja: '= 常識や限界を「喰らう」視点', en: '= A perspective that devours limits' },
+        description: {
+          ja: '夢を喰らい、限界を喰らい、世界の枠組みそのものを更新していく意思。',
+          en: 'A will that devours dreams and limits, rewriting the framework of the world itself.',
+        },
       },
     ],
-    coreValuesLabel: 'Core Values',
+    coreValuesLabel: { ja: 'Core Values', en: 'Core Values' },
     coreValues: [
-      '揺るがない意思と、自分の足で立ち続ける覚悟',
-      '攻めの姿勢と、言葉より先に動く圧倒的行動力',
-      '平凡や「当たり前」への反逆と再定義',
-      '仲間とともに限界を超えていく熱量と連帯',
-      '結果に責任を持つ、実力主義のスタンス',
+      {
+        ja: '揺るがない意思と、自分の足で立ち続ける覚悟',
+        en: 'Unshakeable will and the resolve to stand on our own feet.',
+      },
+      {
+        ja: '攻めの姿勢と、言葉より先に動く圧倒的行動力',
+        en: 'Offensive mindset with overwhelming action that precedes words.',
+      },
+      {
+        ja: '平凡や「当たり前」への反逆と再定義',
+        en: 'Rebellion against the ordinary and redefining what’s “normal.”',
+      },
+      {
+        ja: '仲間とともに限界を超えていく熱量と連帯',
+        en: 'Energy and solidarity to surpass limits with our allies.',
+      },
+      {
+        ja: '結果に責任を持つ、実力主義のスタンス',
+        en: 'A meritocratic stance that takes responsibility for outcomes.',
+      },
     ],
   },
 };
 
 type HeroRow = {
-  heading: string;
-  subheading: string;
-  cta_label: string;
+  heading_ja: string | null;
+  heading_en: string | null;
+  subheading_ja: string | null;
+  subheading_en: string | null;
+  cta_label_ja: string | null;
+  cta_label_en: string | null;
   cta_link: string;
   image_url: string;
 };
 
 type ServiceRow = {
-  intro: string;
+  intro_ja: string | null;
+  intro_en: string | null;
 };
 
 type ServiceItemRow = {
   id: string;
   slug: string | null;
-  title: string;
-  description: string;
+  title_ja: string | null;
+  title_en: string | null;
+  description_ja: string | null;
+  description_en: string | null;
   background_color: string;
   gallery: string[] | null;
   sort_order: number;
 };
 
 type PortfolioRow = {
-  heading: string;
-  subheading: string;
+  heading_ja: string | null;
+  heading_en: string | null;
+  subheading_ja: string | null;
+  subheading_en: string | null;
 };
 
 type PortfolioItemRow = {
   id: string;
-  title: string;
-  description: string;
+  title_ja: string | null;
+  title_en: string | null;
+  description_ja: string | null;
+  description_en: string | null;
   image_url: string;
   link_url: string | null;
   service_id: string | null;
@@ -240,8 +386,8 @@ type PortfolioItemRow = {
 
 type ContentRow = {
   content: {
-    about?: AboutContent;
-    brandPhilosophy?: BrandPhilosophyContent;
+    about?: unknown;
+    brandPhilosophy?: unknown;
   } | null;
 };
 
@@ -257,10 +403,7 @@ async function getAboutFromDb(): Promise<AboutContent | null> {
     return null;
   }
 
-  return {
-    heading: data.content.about.heading,
-    description: data.content.about.description,
-  };
+  return parseAboutContent(data.content.about);
 }
 
 async function getBrandPhilosophyFromDb(): Promise<BrandPhilosophyContent | null> {
@@ -275,14 +418,235 @@ async function getBrandPhilosophyFromDb(): Promise<BrandPhilosophyContent | null
     return null;
   }
 
-  return data.content.brandPhilosophy;
+  return parseBrandPhilosophyContent(data.content.brandPhilosophy);
+}
+
+function createLocalizedText(ja?: string | null, en?: string | null): LocalizedText {
+  const normalizedJa = (ja ?? '').trim();
+  const normalizedEn = (en ?? '').trim();
+
+  if (!normalizedJa && !normalizedEn) {
+    return { ja: '', en: '' };
+  }
+
+  if (!normalizedJa) {
+    return { ja: normalizedEn, en: normalizedEn };
+  }
+
+  if (!normalizedEn) {
+    return { ja: normalizedJa, en: normalizedJa };
+  }
+
+  return { ja: normalizedJa, en: normalizedEn };
+}
+
+const EMPTY_LOCALIZED: LocalizedText = { ja: '', en: '' };
+
+function normalizeLocalizedText(value: unknown): LocalizedText {
+  if (typeof value === 'string') {
+    return { ja: value, en: '' };
+  }
+  if (value && typeof value === 'object') {
+    const source = value as Partial<LocalizedText> & { text?: unknown };
+    const ja =
+      typeof source.ja === 'string'
+        ? source.ja
+        : typeof source.text === 'string'
+          ? (source.text as string)
+          : '';
+    const en = typeof source.en === 'string' ? source.en : '';
+    return { ja, en };
+  }
+  return { ...EMPTY_LOCALIZED };
+}
+
+function normalizeLocalizedTextWithFallback(
+  value: unknown,
+  fallback: LocalizedText,
+): LocalizedText {
+  const normalized = normalizeLocalizedText(value);
+  if (!normalized.ja && !normalized.en) {
+    return fallback;
+  }
+  return normalized;
+}
+
+function normalizeLocalizedTextArray(value: unknown, fallback: LocalizedText[]): LocalizedText[] {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+  const normalized = value.map((entry, index) =>
+    normalizeLocalizedTextWithFallback(entry, fallback[index] ?? EMPTY_LOCALIZED),
+  );
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+function normalizeStructureItems(
+  value: unknown,
+  fallback: BrandPhilosophyStructureItem[],
+): BrandPhilosophyStructureItem[] {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+  const normalized = value.map((entry, index) => {
+    const fallbackItem = fallback[index] ?? {
+      id: `structure-${index}`,
+      label: '',
+      title: EMPTY_LOCALIZED,
+      description: EMPTY_LOCALIZED,
+    };
+    if (!entry || typeof entry !== 'object') {
+      return fallbackItem;
+    }
+    const source = entry as Record<string, unknown>;
+    const title = normalizeLocalizedTextWithFallback(source.title, fallbackItem.title);
+    const description = normalizeLocalizedTextWithFallback(
+      source.description,
+      fallbackItem.description,
+    );
+    const sub = normalizeLocalizedText(source.subDescription);
+    const subDescription =
+      sub.ja || sub.en
+        ? sub
+        : fallbackItem.subDescription
+          ? fallbackItem.subDescription
+          : undefined;
+    return {
+      id: typeof source.id === 'string' ? source.id : fallbackItem.id,
+      label: typeof source.label === 'string' ? source.label : fallbackItem.label,
+      title,
+      description,
+      subDescription,
+    };
+  });
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+function normalizeClosingParts(
+  value: unknown,
+  fallback: BrandPhilosophyClosingPart[],
+): BrandPhilosophyClosingPart[] {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+  const normalized = value.map((entry, index) => {
+    const fallbackPart = fallback[index] ?? {
+      id: `closing-${index}`,
+      text: EMPTY_LOCALIZED,
+      variant: 'default',
+    };
+    if (!entry || typeof entry !== 'object') {
+      return fallbackPart;
+    }
+    const source = entry as Record<string, unknown>;
+    const text = normalizeLocalizedTextWithFallback(source.text, fallbackPart.text);
+    const variant =
+      typeof source.variant === 'string'
+        ? (source.variant as BrandPhilosophyClosingPart['variant'])
+        : fallbackPart.variant;
+    return {
+      id: typeof source.id === 'string' ? source.id : fallbackPart.id,
+      text,
+      variant,
+    };
+  });
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+function normalizeSummaryItems(
+  value: unknown,
+  fallback: BrandPhilosophySummaryItem[],
+): BrandPhilosophySummaryItem[] {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+  const normalized = value.map((entry, index) => {
+    const fallbackItem = fallback[index] ?? {
+      id: `summary-${index}`,
+      label: '',
+      title: EMPTY_LOCALIZED,
+      description: EMPTY_LOCALIZED,
+    };
+    if (!entry || typeof entry !== 'object') {
+      return fallbackItem;
+    }
+    const source = entry as Record<string, unknown>;
+    return {
+      id: typeof source.id === 'string' ? source.id : fallbackItem.id,
+      label: typeof source.label === 'string' ? source.label : fallbackItem.label,
+      title: normalizeLocalizedTextWithFallback(source.title, fallbackItem.title),
+      description: normalizeLocalizedTextWithFallback(source.description, fallbackItem.description),
+    };
+  });
+  return normalized.length > 0 ? normalized : fallback;
+}
+
+function parseAboutContent(raw: unknown): AboutContent {
+  const fallback = FALLBACK_CONTENT.about;
+  if (!raw || typeof raw !== 'object') {
+    return fallback;
+  }
+  const source = raw as Record<string, unknown>;
+  return {
+    heading: normalizeLocalizedTextWithFallback(source.heading, fallback.heading),
+    description: normalizeLocalizedTextWithFallback(source.description, fallback.description),
+  };
+}
+
+function parseBrandPhilosophyContent(raw: unknown): BrandPhilosophyContent {
+  const fallback = FALLBACK_CONTENT.brandPhilosophy;
+  if (!raw || typeof raw !== 'object') {
+    return fallback;
+  }
+  const source = raw as Record<string, unknown>;
+  return {
+    heading: normalizeLocalizedTextWithFallback(source.heading, fallback.heading),
+    subheading: normalizeLocalizedTextWithFallback(source.subheading, fallback.subheading),
+    introHeading: normalizeLocalizedTextWithFallback(source.introHeading, fallback.introHeading),
+    introParagraphs: normalizeLocalizedTextArray(source.introParagraphs, fallback.introParagraphs),
+    structureLabel: normalizeLocalizedTextWithFallback(
+      source.structureLabel,
+      fallback.structureLabel,
+    ),
+    structureDescription: normalizeLocalizedTextWithFallback(
+      source.structureDescription,
+      fallback.structureDescription,
+    ),
+    structureItems: normalizeStructureItems(source.structureItems, fallback.structureItems),
+    closingTitle: normalizeLocalizedTextWithFallback(source.closingTitle, fallback.closingTitle),
+    closingDescriptionParts: normalizeClosingParts(
+      source.closingDescriptionParts,
+      fallback.closingDescriptionParts,
+    ),
+    summaryLabel: normalizeLocalizedTextWithFallback(source.summaryLabel, fallback.summaryLabel),
+    summaryDescription: normalizeLocalizedTextWithFallback(
+      source.summaryDescription,
+      fallback.summaryDescription,
+    ),
+    summarySupportingText: normalizeLocalizedTextWithFallback(
+      source.summarySupportingText,
+      fallback.summarySupportingText,
+    ),
+    summaryItemsLabel: normalizeLocalizedTextWithFallback(
+      source.summaryItemsLabel,
+      fallback.summaryItemsLabel,
+    ),
+    summaryItems: normalizeSummaryItems(source.summaryItems, fallback.summaryItems),
+    coreValuesLabel: normalizeLocalizedTextWithFallback(
+      source.coreValuesLabel,
+      fallback.coreValuesLabel,
+    ),
+    coreValues: normalizeLocalizedTextArray(source.coreValues, fallback.coreValues),
+  };
 }
 
 async function getHeroFromDb(): Promise<HeroContent | null> {
   const supabase = createServerSupabaseClient();
   const { data, error } = await supabase
     .from('lp_hero')
-    .select('heading, subheading, cta_label, cta_link, image_url')
+    .select(
+      'heading_ja, heading_en, subheading_ja, subheading_en, cta_label_ja, cta_label_en, cta_link, image_url',
+    )
     .eq('id', ROW_ID)
     .single<HeroRow>();
 
@@ -291,9 +655,9 @@ async function getHeroFromDb(): Promise<HeroContent | null> {
   }
 
   return {
-    heading: data.heading,
-    subheading: data.subheading,
-    ctaLabel: data.cta_label,
+    heading: createLocalizedText(data.heading_ja, data.heading_en),
+    subheading: createLocalizedText(data.subheading_ja, data.subheading_en),
+    ctaLabel: createLocalizedText(data.cta_label_ja, data.cta_label_en),
     ctaLink: data.cta_link,
     imageUrl: data.image_url,
   };
@@ -303,10 +667,16 @@ async function getServicesFromDb(): Promise<ServicesContent | null> {
   const supabase = createServerSupabaseClient();
   const [{ data: serviceRow, error: servicesError }, { data: items, error: itemsError }] =
     await Promise.all([
-      supabase.from('lp_services').select('intro').eq('id', ROW_ID).single<ServiceRow>(),
+      supabase
+        .from('lp_services')
+        .select('intro_ja, intro_en')
+        .eq('id', ROW_ID)
+        .single<ServiceRow>(),
       supabase
         .from('lp_service_items')
-        .select('id, slug, title, description, background_color, gallery, sort_order')
+        .select(
+          'id, slug, title_ja, title_en, description_ja, description_en, background_color, gallery, sort_order',
+        )
         .eq('services_id', ROW_ID)
         .order('sort_order', { ascending: true })
         .returns<ServiceItemRow[]>(),
@@ -317,13 +687,13 @@ async function getServicesFromDb(): Promise<ServicesContent | null> {
   }
 
   return {
-    intro: serviceRow.intro,
+    intro: createLocalizedText(serviceRow.intro_ja, serviceRow.intro_en),
     items: items.map(
       (item): ServiceItem => ({
         id: item.id,
         slug: item.slug ?? item.id,
-        title: item.title,
-        description: item.description,
+        title: createLocalizedText(item.title_ja, item.title_en),
+        description: createLocalizedText(item.description_ja, item.description_en),
         backgroundColor: item.background_color,
         gallery: item.gallery ?? [],
       }),
@@ -336,12 +706,14 @@ async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
   const [{ data: meta, error: metaError }, { data: items, error: itemsError }] = await Promise.all([
     supabase
       .from('lp_portfolio')
-      .select('heading, subheading')
+      .select('heading_ja, heading_en, subheading_ja, subheading_en')
       .eq('id', ROW_ID)
       .single<PortfolioRow>(),
     supabase
       .from('lp_portfolio_items')
-      .select('id, title, description, image_url, link_url, service_id, sort_order')
+      .select(
+        'id, title_ja, title_en, description_ja, description_en, image_url, link_url, service_id, sort_order',
+      )
       .eq('portfolio_id', ROW_ID)
       .order('service_id', { ascending: true, nullsFirst: true })
       .order('sort_order', { ascending: true })
@@ -353,13 +725,13 @@ async function getPortfolioFromDb(): Promise<PortfolioContent | null> {
   }
 
   return {
-    heading: meta.heading,
-    subheading: meta.subheading,
+    heading: createLocalizedText(meta.heading_ja, meta.heading_en),
+    subheading: createLocalizedText(meta.subheading_ja, meta.subheading_en),
     items: items.map(
       (item): PortfolioItem => ({
         id: item.id,
-        title: item.title,
-        description: item.description,
+        title: createLocalizedText(item.title_ja, item.title_en),
+        description: createLocalizedText(item.description_ja, item.description_en),
         imageUrl: item.image_url,
         linkUrl: item.link_url ?? undefined,
         serviceId: item.service_id ?? null,
@@ -386,26 +758,38 @@ export async function getLandingContent(): Promise<LandingContent> {
   };
 }
 
+type LpContentSectionUpdates = {
+  about?: AboutContent;
+  brandPhilosophy?: BrandPhilosophyContent;
+};
+
 function mergeLpContentSections(
   currentContent: ContentRow['content'] | null | undefined,
-  content: LandingContent,
+  updates: LpContentSectionUpdates,
 ) {
   const normalizedContent = (currentContent ?? {}) as NonNullable<ContentRow['content']>;
 
   return {
     ...normalizedContent,
-    // NOTE: 新しいセクションを lp_content に追加する場合はここでマージ処理を行う
-    about: {
-      heading: content.about.heading,
-      description: content.about.description,
-    },
-    brandPhilosophy: content.brandPhilosophy,
+    ...(updates.about
+      ? {
+          about: {
+            heading: updates.about.heading,
+            description: updates.about.description,
+          },
+        }
+      : {}),
+    ...(updates.brandPhilosophy
+      ? {
+          brandPhilosophy: updates.brandPhilosophy,
+        }
+      : {}),
   };
 }
 
 async function saveLpContentSections(
   supabase: SupabaseClient,
-  content: LandingContent,
+  sections: LpContentSectionUpdates,
 ): Promise<void> {
   const { data: existing, error: existingError } = await supabase
     .from('lp_content')
@@ -417,7 +801,7 @@ async function saveLpContentSections(
     throw new Error(existingError.message);
   }
 
-  const updatedContent = mergeLpContentSections(existing?.content, content);
+  const updatedContent = mergeLpContentSections(existing?.content, sections);
 
   const { error: lpContentError } = await supabase.from('lp_content').upsert(
     {
@@ -433,13 +817,16 @@ async function saveLpContentSections(
   }
 }
 
-async function saveHeroToDb(supabase: SupabaseClient, hero: HeroContent): Promise<void> {
+export async function saveHeroToDb(supabase: SupabaseClient, hero: HeroContent): Promise<void> {
   const { error } = await supabase.from('lp_hero').upsert(
     {
       id: ROW_ID,
-      heading: hero.heading,
-      subheading: hero.subheading,
-      cta_label: hero.ctaLabel,
+      heading_ja: hero.heading.ja,
+      heading_en: hero.heading.en || null,
+      subheading_ja: hero.subheading.ja,
+      subheading_en: hero.subheading.en || null,
+      cta_label_ja: hero.ctaLabel.ja,
+      cta_label_en: hero.ctaLabel.en || null,
       cta_link: hero.ctaLink,
       image_url: hero.imageUrl,
       updated_at: new Date().toISOString(),
@@ -452,33 +839,137 @@ async function saveHeroToDb(supabase: SupabaseClient, hero: HeroContent): Promis
   }
 }
 
-async function saveServicesToDb(
+async function updateServicesPortfolioLinks(
   supabase: SupabaseClient,
-  services: ServicesContent,
+  serviceIds: string[],
 ): Promise<void> {
-  const { error } = await supabase.rpc('upsert_lp_services', {
-    p_services: {
-      id: ROW_ID,
-      intro: services.intro,
-      items: services.items,
-    },
-  });
+  if (serviceIds.length === 0) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from('lp_portfolio_items')
+    .update({ service_id: null })
+    .in('service_id', serviceIds);
 
   if (error) {
-    console.error('[saveServicesToDb] upsert_lp_services failed', error, { services });
-    throw new Error(`services: ${error.message}`);
+    console.error('[saveServicesToDb] failed to unlink portfolio items', error, { serviceIds });
+    throw new Error(`portfolio-unlink: ${error.message}`);
   }
 }
 
-async function savePortfolioMetadataToDb(
+async function deleteServiceItems(supabase: SupabaseClient, serviceIds: string[]): Promise<void> {
+  if (serviceIds.length === 0) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from('lp_service_items')
+    .delete()
+    .eq('services_id', ROW_ID)
+    .in('id', serviceIds);
+
+  if (error) {
+    console.error('[saveServicesToDb] lp_service_items delete failed', error, { serviceIds });
+    throw new Error(`service-items-delete: ${error.message}`);
+  }
+}
+
+async function fetchExistingServiceItemIds(supabase: SupabaseClient): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('lp_service_items')
+    .select('id')
+    .eq('services_id', ROW_ID);
+
+  if (error) {
+    console.error('[saveServicesToDb] fetch existing service items failed', error);
+    throw new Error(`service-items-fetch: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => row.id);
+}
+
+export async function saveServicesToDb(
+  supabase: SupabaseClient,
+  services: ServicesContent,
+): Promise<void> {
+  const introJa = services.intro.ja?.trim() ?? '';
+  const introEn = services.intro.en?.trim() ?? '';
+
+  const { error: servicesError } = await supabase.from('lp_services').upsert(
+    {
+      id: ROW_ID,
+      intro_ja: introJa,
+      intro_en: introEn || null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'id' },
+  );
+
+  if (servicesError) {
+    console.error('[saveServicesToDb] lp_services upsert failed', servicesError, { services });
+    throw new Error(`services: ${servicesError.message}`);
+  }
+
+  const normalizedItems = services.items.map((item, index) => {
+    const slug = item.slug?.trim() || item.id;
+    const titleJa = item.title.ja?.trim() ?? '';
+    const titleEn = item.title.en?.trim() ?? '';
+    const descriptionJa = item.description.ja?.trim() ?? '';
+    const descriptionEn = item.description.en?.trim() ?? '';
+
+    if (!titleJa) {
+      throw new Error('Service title (ja) is required');
+    }
+
+    return {
+      id: item.id,
+      services_id: ROW_ID,
+      slug,
+      title_ja: titleJa,
+      title_en: titleEn || null,
+      description_ja: descriptionJa,
+      description_en: descriptionEn || null,
+      background_color: item.backgroundColor,
+      gallery: item.gallery,
+      sort_order: index,
+    };
+  });
+
+  const existingIds = await fetchExistingServiceItemIds(supabase);
+  const payloadIds = new Set(normalizedItems.map((item) => item.id));
+  const idsToDelete = existingIds.filter((id) => !payloadIds.has(id));
+
+  if (idsToDelete.length > 0) {
+    await updateServicesPortfolioLinks(supabase, idsToDelete);
+    await deleteServiceItems(supabase, idsToDelete);
+  }
+
+  if (normalizedItems.length > 0) {
+    const { error: itemsError } = await supabase
+      .from('lp_service_items')
+      .upsert(normalizedItems, { onConflict: 'id' });
+
+    if (itemsError) {
+      console.error('[saveServicesToDb] lp_service_items upsert failed', itemsError, {
+        services,
+      });
+      throw new Error(`service-items: ${itemsError.message}`);
+    }
+  }
+}
+
+export async function savePortfolioMetadataToDb(
   supabase: SupabaseClient,
   portfolio: Pick<PortfolioContent, 'heading' | 'subheading'>,
 ): Promise<void> {
   const { error } = await supabase.from('lp_portfolio').upsert(
     {
       id: ROW_ID,
-      heading: portfolio.heading,
-      subheading: portfolio.subheading,
+      heading_ja: portfolio.heading.ja,
+      heading_en: portfolio.heading.en || null,
+      subheading_ja: portfolio.subheading.ja,
+      subheading_en: portfolio.subheading.en || null,
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'id' },
@@ -488,6 +979,20 @@ async function savePortfolioMetadataToDb(
     console.error('[savePortfolioMetadataToDb] failed', error, { portfolio });
     throw new Error(`portfolio-meta: ${error.message}`);
   }
+}
+
+export async function saveAboutSectionToDb(
+  supabase: SupabaseClient,
+  about: AboutContent,
+): Promise<void> {
+  await saveLpContentSections(supabase, { about });
+}
+
+export async function saveBrandPhilosophySectionToDb(
+  supabase: SupabaseClient,
+  brandPhilosophy: BrandPhilosophyContent,
+): Promise<void> {
+  await saveLpContentSections(supabase, { brandPhilosophy });
 }
 
 type SavePortfolioItemsForServiceParams = {
@@ -502,7 +1007,7 @@ export async function savePortfolioItemsForService({
   items,
 }: SavePortfolioItemsForServiceParams): Promise<PortfolioItem[]> {
   const normalizedItems: PortfolioItem[] = items.map((item) => {
-    const normalizedTitle = item.title.trim();
+    const normalizedTitle = item.title.ja.trim();
     const normalizedImage = item.imageUrl.trim();
 
     if (!normalizedTitle) {
@@ -515,8 +1020,14 @@ export async function savePortfolioItemsForService({
     return {
       ...item,
       id: item.id?.trim() || item.id,
-      title: normalizedTitle,
-      description: item.description?.trim() ?? '',
+      title: {
+        ja: normalizedTitle,
+        en: item.title.en?.trim() || normalizedTitle,
+      },
+      description: {
+        ja: item.description.ja?.trim() ?? '',
+        en: item.description.en?.trim() || item.description.ja?.trim() || '',
+      },
       imageUrl: normalizedImage,
       linkUrl: item.linkUrl?.trim() || undefined,
       serviceId: serviceId ?? null,
@@ -541,8 +1052,10 @@ export async function savePortfolioItemsForService({
   const nextRows = normalizedItems.map((item, index) => ({
     id: item.id,
     portfolio_id: ROW_ID,
-    title: item.title,
-    description: item.description,
+    title_ja: item.title.ja,
+    title_en: item.title.en || null,
+    description_ja: item.description.ja,
+    description_en: item.description.en || null,
     image_url: item.imageUrl,
     link_url: item.linkUrl ?? null,
     sort_order: index,
@@ -584,58 +1097,6 @@ export async function savePortfolioItemsForService({
   }
 
   return normalizedItems;
-}
-
-function normalizePortfolioForServices(
-  portfolio: PortfolioContent,
-  services: ServiceItem[],
-): PortfolioContent {
-  const validServiceIds = new Set(services.map((service) => service.id));
-
-  return {
-    ...portfolio,
-    items: portfolio.items.map((item) => ({
-      ...item,
-      serviceId: item.serviceId && validServiceIds.has(item.serviceId) ? item.serviceId : null,
-    })),
-  };
-}
-
-type SaveLandingContentParams = {
-  supabase: SupabaseClient;
-  content: LandingContent;
-};
-
-export async function saveLandingContent({
-  supabase,
-  content,
-}: SaveLandingContentParams): Promise<LandingContent> {
-  const normalizedPortfolio = normalizePortfolioForServices(
-    content.portfolio,
-    content.services.items,
-  );
-  const normalizedContent: LandingContent = {
-    ...content,
-    portfolio: normalizedPortfolio,
-  };
-
-  await saveLpContentSections(supabase, normalizedContent);
-
-  const results = await Promise.allSettled([
-    saveHeroToDb(supabase, normalizedContent.hero),
-    saveServicesToDb(supabase, normalizedContent.services),
-    savePortfolioMetadataToDb(supabase, {
-      heading: normalizedPortfolio.heading,
-      subheading: normalizedPortfolio.subheading,
-    }),
-  ]);
-
-  const rejected = results.find((result) => result.status === 'rejected');
-  if (rejected && rejected.status === 'rejected') {
-    throw rejected.reason instanceof Error ? rejected.reason : new Error(String(rejected.reason));
-  }
-
-  return normalizedContent;
 }
 
 export { FALLBACK_CONTENT as DEFAULT_LANDING_CONTENT };

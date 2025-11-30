@@ -1,6 +1,7 @@
 import { PortfolioGrid } from '@/components/lp/portfolio/PortfolioGrid';
 import type { PortfolioItemForUI } from '@/components/lp/portfolio/types';
 import type { ServicePortfolioItem } from '@/services/site/service-detail';
+import type { LocalizedText } from '@/types/landing';
 import type { JSX } from 'react';
 
 /**
@@ -10,17 +11,24 @@ import type { JSX } from 'react';
  *   - portfolios: サービス紐付きのポートフォリオ配列
  *   - serviceTitle: 見出し用に使用するサービス名
  */
+type ServicePortfolioSectionProps = {
+  portfolios: ServicePortfolioItem[];
+  serviceTitle?: string;
+  locale: 'ja' | 'en';
+};
+
+const pickLocalized = (value: LocalizedText, locale: 'ja' | 'en'): string =>
+  locale === 'en' ? value.en || value.ja : value.ja;
+
 export function ServicePortfolioSection({
   portfolios,
   serviceTitle,
-}: {
-  portfolios: ServicePortfolioItem[];
-  serviceTitle?: string;
-}): JSX.Element {
+  locale,
+}: ServicePortfolioSectionProps): JSX.Element {
   const items: PortfolioItemForUI[] = portfolios.map((item) => ({
     id: item.id,
-    title: item.title,
-    description: item.description,
+    title: pickLocalized(item.title, locale),
+    description: pickLocalized(item.description, locale),
     imageUrl: item.imageUrl,
     linkUrl: item.linkUrl,
   }));

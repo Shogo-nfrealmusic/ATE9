@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import type { PortfolioContent, ServiceItem } from '@/types/landing';
 import type { JSX } from 'react';
@@ -35,6 +36,11 @@ export function PortfolioSectionEditor({
       (item) => normalizeServiceKey(item.serviceId) === normalizeServiceKey(serviceId),
     ).length;
 
+  const headingJa = portfolio.heading.ja ?? '';
+  const headingEn = portfolio.heading.en ?? '';
+  const subheadingJa = portfolio.subheading.ja ?? '';
+  const subheadingEn = portfolio.subheading.en ?? '';
+
   return (
     <div className="space-y-6">
       <div>
@@ -52,30 +58,98 @@ export function PortfolioSectionEditor({
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="portfolio-heading" className="text-text-headings">
-                Heading
-              </Label>
-              <Input
-                id="portfolio-heading"
-                value={portfolio.heading}
-                onChange={(e) => onChange({ ...portfolio, heading: e.target.value })}
-                placeholder="Our Portfolio"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="portfolio-subheading" className="text-text-headings">
-                Subheading
-              </Label>
-              <Input
-                id="portfolio-subheading"
-                value={portfolio.subheading}
-                onChange={(e) => onChange({ ...portfolio, subheading: e.target.value })}
-                placeholder="実績一覧"
-              />
-            </div>
-          </div>
+          <Tabs defaultValue="ja" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="ja">日本語</TabsTrigger>
+              <TabsTrigger value="en">English</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="ja" className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="portfolio-heading_ja" className="text-text-headings">
+                    Heading <span className="text-text-body/70">(日本語) *</span>
+                  </Label>
+                  <Input
+                    id="portfolio-heading_ja"
+                    value={headingJa}
+                    onChange={(e) =>
+                      onChange({
+                        ...portfolio,
+                        heading: {
+                          ...portfolio.heading,
+                          ja: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="Our Portfolio"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="portfolio-subheading_ja" className="text-text-headings">
+                    Subheading <span className="text-text-body/70">(日本語) *</span>
+                  </Label>
+                  <Input
+                    id="portfolio-subheading_ja"
+                    value={subheadingJa}
+                    onChange={(e) =>
+                      onChange({
+                        ...portfolio,
+                        subheading: {
+                          ...portfolio.subheading,
+                          ja: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="実績一覧"
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="en" className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="portfolio-heading_en" className="text-text-headings">
+                    Heading <span className="text-text-body/70">(English)</span>
+                  </Label>
+                  <Input
+                    id="portfolio-heading_en"
+                    value={headingEn}
+                    onChange={(e) =>
+                      onChange({
+                        ...portfolio,
+                        heading: {
+                          ...portfolio.heading,
+                          en: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="Our Portfolio"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="portfolio-subheading_en" className="text-text-headings">
+                    Subheading <span className="text-text-body/70">(English)</span>
+                  </Label>
+                  <Input
+                    id="portfolio-subheading_en"
+                    value={subheadingEn}
+                    onChange={(e) =>
+                      onChange({
+                        ...portfolio,
+                        subheading: {
+                          ...portfolio.subheading,
+                          en: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="A curated selection of our past work"
+                  />
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -108,7 +182,9 @@ export function PortfolioSectionEditor({
                 )}
               >
                 <div>
-                  <p className="text-lg font-semibold text-neutral-900">{service.title}</p>
+                  <p className="text-lg font-semibold text-neutral-900">
+                    {service.title.ja || '-'}
+                  </p>
                   <p className="text-sm text-neutral-500">
                     紐づく Works: {getWorksCount(service.id)} 件
                   </p>
@@ -118,7 +194,7 @@ export function PortfolioSectionEditor({
                   onClick={() =>
                     onManageWorks({
                       serviceId: service.id,
-                      serviceTitle: `${service.title} Works`,
+                      serviceTitle: `${service.title.ja || ''} Works`,
                       serviceSlug: service.slug || undefined,
                     })
                   }
