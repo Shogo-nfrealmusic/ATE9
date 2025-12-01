@@ -77,7 +77,7 @@ export function ServiceHeader({ locale, breadcrumbs }: ServiceHeaderProps): JSX.
               type="button"
               onClick={() => updateLang('ja')}
               aria-pressed={currentLang === 'ja'}
-              className={`rounded-full px-3 py-1 transition ${
+              className={`rounded-full px-3 py-1 transition cursor-pointer ${
                 currentLang === 'ja' ? 'bg-white text-black' : 'text-white/70 hover:bg-white/10'
               }`}
             >
@@ -87,7 +87,7 @@ export function ServiceHeader({ locale, breadcrumbs }: ServiceHeaderProps): JSX.
               type="button"
               onClick={() => updateLang('en')}
               aria-pressed={currentLang === 'en'}
-              className={`rounded-full px-3 py-1 transition ${
+              className={`rounded-full px-3 py-1 transition cursor-pointer ${
                 currentLang === 'en' ? 'bg-white text-black' : 'text-white/70 hover:bg-white/10'
               }`}
             >

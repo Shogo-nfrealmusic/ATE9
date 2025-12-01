@@ -20,7 +20,7 @@ export function SectionServices({ content, locale }: SectionServicesProps): JSX.
           Our Services
         </h2>
         {intro ? (
-          <p className="mx-auto mt-4 mb-10 max-w-3xl text-center text-sm text-white/70 sm:text-base">
+          <p className="mx-auto mt-4 mb-10 max-w-3xl text-center text-sm text-white/70 sm:text-base whitespace-pre-line">
             {intro}
           </p>
         ) : null}
@@ -38,7 +38,9 @@ export function SectionServices({ content, locale }: SectionServicesProps): JSX.
                     {title}
                   </h3>
                   <span className="h-px w-8 origin-left scale-x-50 bg-ate9-red transition duration-300 group-hover:scale-x-100" />
-                  <p className="text-xs leading-relaxed text-white/80 sm:text-sm">{description}</p>
+                  <p className="text-xs leading-relaxed text-white/80 sm:text-sm whitespace-pre-line">
+                    {description}
+                  </p>
                 </div>
 
                 <div className="pointer-events-none absolute inset-0 rounded-xl border-2 border-transparent transition group-hover:border-ate9-red/60" />

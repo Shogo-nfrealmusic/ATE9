@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { PortfolioContent, ServiceItem } from '@/types/landing';
 import type { JSX } from 'react';
@@ -89,8 +90,9 @@ export function PortfolioSectionEditor({
                   <Label htmlFor="portfolio-subheading_ja" className="text-text-headings">
                     Subheading <span className="text-text-body/70">(日本語) *</span>
                   </Label>
-                  <Input
+                  <Textarea
                     id="portfolio-subheading_ja"
+                    rows={3}
                     value={subheadingJa}
                     onChange={(e) =>
                       onChange({
@@ -132,8 +134,9 @@ export function PortfolioSectionEditor({
                   <Label htmlFor="portfolio-subheading_en" className="text-text-headings">
                     Subheading <span className="text-text-body/70">(English)</span>
                   </Label>
-                  <Input
+                  <Textarea
                     id="portfolio-subheading_en"
+                    rows={3}
                     value={subheadingEn}
                     onChange={(e) =>
                       onChange({

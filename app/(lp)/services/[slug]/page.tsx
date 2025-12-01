@@ -123,7 +123,7 @@ export default async function ServiceDetailPage({
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               {serviceTitle} について話しましょう
             </h2>
-            <p className="text-base text-white/80">
+            <p className="text-base text-white/80 whitespace-pre-line">
               {serviceDescription ||
                 'ご質問やお見積りのご相談はフォームからお気軽に。コンタクト後、チームから 24h 以内にご連絡します。'}
             </p>

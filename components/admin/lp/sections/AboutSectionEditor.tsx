@@ -127,7 +127,7 @@ export function AboutSectionEditor({
                   {about.heading[locale.value] || (locale.value === 'ja' ? '見出し' : 'Heading')}
                 </h2>
                 <div className="w-16 h-0.5 bg-red-600"></div>
-                <p className="text-white/80 leading-relaxed text-sm">
+                <p className="text-white/80 leading-relaxed text-sm whitespace-pre-line">
                   {about.description[locale.value] ||
                     (locale.value === 'ja' ? '説明文' : 'Description')}
                 </p>

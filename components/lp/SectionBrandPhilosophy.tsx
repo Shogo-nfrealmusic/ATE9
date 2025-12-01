@@ -49,14 +49,14 @@ export function SectionBrandPhilosophy({
                 {heading}
               </h2>
               <div className="h-0.5 w-16 bg-ate9-red" />
-              <p className="text-xs text-white/60 md:text-sm">{subheading}</p>
+              <p className="text-xs text-white/60 md:text-sm whitespace-pre-line">{subheading}</p>
             </div>
 
             <div className="space-y-5">
               <p className="text-2xl font-semibold leading-relaxed tracking-[-0.02em] text-white md:text-3xl lg:text-4xl">
                 {introHeading}
               </p>
-              <div className="space-y-3 text-sm leading-relaxed text-white/70 sm:text-base">
+              <div className="space-y-3 text-sm leading-relaxed text-white/70 sm:text-base whitespace-pre-line">
                 {content.introParagraphs.map((paragraph, index) => (
                   <p key={`intro-${index}`}>{pickText(paragraph, locale)}</p>
                 ))}
@@ -67,7 +67,7 @@ export function SectionBrandPhilosophy({
               <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-white/60 md:text-sm">
                 {structureLabel}
               </h3>
-              <p className="max-w-3xl text-sm leading-relaxed text-white/70 sm:text-base">
+              <p className="max-w-3xl text-sm leading-relaxed text-white/70 sm:text-base whitespace-pre-line">
                 {structureDescription}
               </p>
 
@@ -87,11 +87,11 @@ export function SectionBrandPhilosophy({
                           {pickText(item.title, locale)}
                         </p>
                         {item.subDescription ? (
-                          <p className="text-xs text-white/70">
+                          <p className="text-xs text-white/70 whitespace-pre-line">
                             {pickOptionalText(item.subDescription, locale)}
                           </p>
                         ) : null}
-                        <p className="text-sm leading-relaxed text-white/70">
+                        <p className="text-sm leading-relaxed text-white/70 whitespace-pre-line">
                           {pickText(item.description, locale)}
                         </p>
                       </div>
@@ -109,7 +109,7 @@ export function SectionBrandPhilosophy({
                 {content.closingDescriptionParts.map((part) => (
                   <span
                     key={part.id}
-                    className={`${closingVariantClassMap[part.variant ?? 'default']} mr-1 inline-block`}
+                    className={`${closingVariantClassMap[part.variant ?? 'default']} mr-1 inline-block whitespace-pre-line`}
                   >
                     {pickText(part.text, locale)}
                   </span>
@@ -126,10 +126,10 @@ export function SectionBrandPhilosophy({
                 </p>
               ) : null}
               <div className="space-y-2">
-                <p className="text-sm leading-relaxed text-white/80 sm:text-base">
+                <p className="text-sm leading-relaxed text-white/80 sm:text-base whitespace-pre-line">
                   {summaryDescription}
                 </p>
-                <p className="text-sm leading-relaxed text-white/70 sm:text-base">
+                <p className="text-sm leading-relaxed text-white/70 sm:text-base whitespace-pre-line">
                   {summarySupportingText}
                 </p>
               </div>
@@ -148,7 +148,7 @@ export function SectionBrandPhilosophy({
                       <span className="text-ate9-red">{item.label}</span>{' '}
                       {pickText(item.title, locale)}
                     </p>
-                    <p>{pickText(item.description, locale)}</p>
+                    <p className="whitespace-pre-line">{pickText(item.description, locale)}</p>
                   </div>
                 ))}
               </div>

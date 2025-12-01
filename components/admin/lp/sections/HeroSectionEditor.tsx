@@ -198,7 +198,7 @@ export function HeroSectionEditor({
             <div className="space-y-6">
               <div className="bg-black text-white p-8 rounded-lg space-y-4 min-h-[400px] flex flex-col justify-center">
                 <h1 className="text-3xl font-bold">{headingJa || '見出し'}</h1>
-                <p className="text-white/80">{subheadingJa || 'サブコピー'}</p>
+                <p className="text-white/80 whitespace-pre-line">{subheadingJa || 'サブコピー'}</p>
                 {ctaLabelJa && (
                   <div className="pt-4">
                     <button className="bg-red-600 px-4 py-2 rounded text-sm font-bold">
@@ -209,7 +209,9 @@ export function HeroSectionEditor({
               </div>
               <div className="bg-black text-white p-8 rounded-lg space-y-4 min-h-[400px] flex flex-col justify-center">
                 <h1 className="text-3xl font-bold">{headingEn || headingJa || 'Heading'}</h1>
-                <p className="text-white/80">{subheadingEn || subheadingJa || 'Subheading'}</p>
+                <p className="text-white/80 whitespace-pre-line">
+                  {subheadingEn || subheadingJa || 'Subheading'}
+                </p>
                 {(ctaLabelEn || ctaLabelJa) && (
                   <div className="pt-4">
                     <button className="bg-red-600 px-4 py-2 rounded text-sm font-bold">

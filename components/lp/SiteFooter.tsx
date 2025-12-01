@@ -68,7 +68,7 @@ export function SiteFooter(): JSX.Element {
               </svg>
             </Link>
           </div>
-          <p className="text-xs text-white/50">© 2024 ATE9. All rights reserved.</p>
+          <p className="text-xs text-white/50">© 2025 ATE9. All rights reserved.</p>
         </div>
       </div>
     </footer>

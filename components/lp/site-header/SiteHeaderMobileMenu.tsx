@@ -102,7 +102,7 @@ export function SiteHeaderMobileMenu({ navItems }: SiteHeaderMobileMenuProps): J
       {/* オーバーレイ（メニュー外の暗い背景） */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm cursor-pointer"
           onClick={handleClose}
           aria-hidden="true"
         />

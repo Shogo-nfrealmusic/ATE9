@@ -30,7 +30,9 @@ export function PortfolioCard({ item }: PortfolioCardProps): JSX.Element {
           {item.title}
         </h3>
         {item.description ? (
-          <p className="text-sm text-white/80 sm:text-base">{item.description}</p>
+          <p className="text-sm text-white/80 sm:text-base whitespace-pre-line">
+            {item.description}
+          </p>
         ) : null}
         {item.linkUrl ? (
           <span className="mt-4 inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/80">
