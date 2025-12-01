@@ -11,20 +11,28 @@ import type { JSX } from 'react';
  *   - portfolios: サービス紐付きのポートフォリオ配列
  *   - serviceTitle: 見出し用に使用するサービス名
  */
+type Lang = 'ja' | 'en';
+
 type ServicePortfolioSectionProps = {
   portfolios: ServicePortfolioItem[];
   serviceTitle?: string;
-  locale: 'ja' | 'en';
+  locale: Lang;
 };
 
-const pickLocalized = (value: LocalizedText, locale: 'ja' | 'en'): string =>
+const pickLocalized = (value: LocalizedText, locale: Lang): string =>
   locale === 'en' ? value.en || value.ja : value.ja;
+
+const worksDescriptionByLocale: Record<Lang, string> = {
+  ja: 'サービスに紐づく代表的な案件をピックアップ。',
+  en: 'Highlighted projects associated with each service.',
+};
 
 export function ServicePortfolioSection({
   portfolios,
   serviceTitle,
   locale,
 }: ServicePortfolioSectionProps): JSX.Element {
+  const worksDescription = worksDescriptionByLocale[locale];
   const items: PortfolioItemForUI[] = portfolios.map((item) => ({
     id: item.id,
     title: pickLocalized(item.title, locale),
@@ -42,7 +50,7 @@ export function ServicePortfolioSection({
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               {serviceTitle ? `${serviceTitle} Works` : 'Selected Works'}
             </h2>
-            <p className="text-base text-white/70">サービスに紐づく代表的な案件をピックアップ。</p>
+            <p className="text-base text-white/70">{worksDescription}</p>
           </div>
           <div className="rounded-2xl border border-dashed border-white/20 bg-black/30 p-10 text-white/70">
             Coming soon. 実績を順次追加予定です。
@@ -58,7 +66,7 @@ export function ServicePortfolioSection({
         <PortfolioGrid
           items={items}
           heading={serviceTitle ? `${serviceTitle} Works` : 'Selected Works'}
-          subtitle="サービスに紐づく代表的な案件をピックアップ。"
+          subtitle={worksDescription}
           eyebrowLabel="Works"
         />
       </div>
