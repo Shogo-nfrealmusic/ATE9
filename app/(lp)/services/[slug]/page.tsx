@@ -1,4 +1,5 @@
-import { Breadcrumb } from '@/components/ui/breadcrumb';
+import { ServiceHeader } from '@/components/lp/ServiceHeader';
+import type { BreadcrumbItem } from '@/components/ui/breadcrumb';
 import { Button } from '@/components/ui/button';
 import { getPortfoliosByServiceId, getServiceDetailBySlug } from '@/services/site/service-detail';
 import type { LocalizedText } from '@/types/landing';
@@ -100,19 +101,16 @@ export default async function ServiceDetailPage({
   const { service, portfolios } = data;
   const serviceTitle = pickLocalized(service.title, locale);
   const serviceDescription = pickLocalized(service.description, locale);
-  const breadcrumbItems = [
+  const contactHref = `/?lang=${locale}#contact`;
+  const breadcrumbItems: BreadcrumbItem[] = [
     { label: 'Home', href: '/' },
     { label: serviceTitle, isCurrent: true },
   ];
 
   return (
     <div className="flex min-h-screen flex-col bg-ate9-bg text-white">
+      <ServiceHeader locale={locale} breadcrumbs={breadcrumbItems} />
       <main className="flex-1">
-        <section className="border-b border-white/10 bg-transparent px-4 md:px-8">
-          <div className="mx-auto max-w-6xl">
-            <Breadcrumb className="pt-4 pb-4 md:pt-6 md:pb-6" items={breadcrumbItems} />
-          </div>
-        </section>
         <ServiceHero service={service} locale={locale} />
         <ServicePortfolioSection
           portfolios={portfolios}
@@ -131,7 +129,7 @@ export default async function ServiceDetailPage({
             </p>
             <div className="flex justify-center">
               <Button asChild size="lg" className="bg-ate9-red hover:bg-ate9-red/80">
-                <Link href="/#contact">Contact Us</Link>
+                <Link href={contactHref}>Contact Us</Link>
               </Button>
             </div>
           </div>

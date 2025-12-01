@@ -46,10 +46,11 @@ export function SectionServices({ content, locale }: SectionServicesProps): JSX.
             );
 
             if (item.slug) {
+              const href = { pathname: `/services/${item.slug}`, query: { lang: locale } };
               return (
                 <Link
                   key={item.id}
-                  href={`/services/${item.slug}`}
+                  href={href}
                   className="group block h-full rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ate9-red focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                   aria-label={`${title} の詳細を見る`}
                 >
