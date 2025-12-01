@@ -50,7 +50,7 @@ export function ServicePortfolioSection({
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
               {serviceTitle ? `${serviceTitle} Works` : 'Selected Works'}
             </h2>
-            <p className="text-base text-white/70">{worksDescription}</p>
+            <p className="text-base text-white/70 whitespace-pre-line">{worksDescription}</p>
           </div>
           <div className="rounded-2xl border border-dashed border-white/20 bg-black/30 p-10 text-white/70">
             Coming soon. 実績を順次追加予定です。

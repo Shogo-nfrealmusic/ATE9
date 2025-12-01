@@ -21,7 +21,7 @@ export function SectionAbout({ content, locale }: SectionAboutProps): JSX.Elemen
             {heading}
           </h2>
           <div className="mx-auto my-2 h-0.5 w-16 bg-ate9-red md:mx-0" />
-          <p className="text-sm font-normal leading-relaxed text-white/80 sm:text-base">
+          <p className="text-sm font-normal leading-relaxed text-white/80 sm:text-base whitespace-pre-line">
             {description}
           </p>
         </div>

@@ -37,7 +37,9 @@ export function PortfolioGrid({
             </h2>
           )}
           {subtitle && (
-            <p className="mx-auto mt-4 max-w-2xl text-sm text-white/70 sm:text-base">{subtitle}</p>
+            <p className="mx-auto mt-4 max-w-2xl text-sm text-white/70 sm:text-base whitespace-pre-line">
+              {subtitle}
+            </p>
           )}
         </div>
       )}

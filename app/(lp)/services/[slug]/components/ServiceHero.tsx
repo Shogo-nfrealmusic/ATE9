@@ -43,7 +43,9 @@ export function ServiceHero({ service, locale }: ServiceHeroProps): JSX.Element 
           <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
             {title}
           </h1>
-          <p className="max-w-2xl text-base text-white/80 sm:text-lg">{description}</p>
+          <p className="max-w-2xl text-base text-white/80 sm:text-lg whitespace-pre-line">
+            {description}
+          </p>
           {highlights.length > 0 && (
             <ul className="mt-6 space-y-3 text-sm text-white/80">
               {highlights.map((highlight, index) => (

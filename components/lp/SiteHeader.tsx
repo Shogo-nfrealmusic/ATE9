@@ -44,14 +44,14 @@ export function SiteHeader({ locale }: SiteHeaderProps): JSX.Element {
 
   return (
     <header className="fixed left-0 right-0 top-0 z-50 flex items-center justify-between whitespace-nowrap bg-transparent px-6 py-4 sm:px-10">
-      <div className="flex items-center gap-4">
+      <Link href="/" className="flex items-center gap-4 cursor-pointer" aria-label="ATE9 home">
         <div className="h-5 w-5 text-ate9-red">
           <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 6H42L36 24L42 42H6L12 24L6 6Z" fill="currentColor" />
           </svg>
         </div>
         <p className="text-xl font-bold tracking-[-0.015em] text-white">ATE9</p>
-      </div>
+      </Link>
 
       <div className="flex items-center gap-4">
         <nav className="hidden items-center gap-6 text-sm font-medium text-white md:flex">
@@ -81,7 +81,7 @@ export function SiteHeader({ locale }: SiteHeaderProps): JSX.Element {
               type="button"
               onClick={() => updateLang('ja')}
               aria-pressed={currentLang === 'ja'}
-              className={`px-3 py-1 rounded-full transition ${
+              className={`px-3 py-1 rounded-full transition cursor-pointer ${
                 currentLang === 'ja' ? 'bg-white text-black' : 'text-white/70 hover:bg-white/10'
               }`}
             >
@@ -91,7 +91,7 @@ export function SiteHeader({ locale }: SiteHeaderProps): JSX.Element {
               type="button"
               onClick={() => updateLang('en')}
               aria-pressed={currentLang === 'en'}
-              className={`px-3 py-1 rounded-full transition ${
+              className={`px-3 py-1 rounded-full transition cursor-pointer ${
                 currentLang === 'en' ? 'bg-white text-black' : 'text-white/70 hover:bg-white/10'
               }`}
             >
