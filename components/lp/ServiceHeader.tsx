@@ -3,6 +3,7 @@
 import type { BreadcrumbItem } from '@/components/ui/breadcrumb';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import type { JSX } from 'react';
 import { useMemo } from 'react';
 
 type Lang = 'ja' | 'en';
