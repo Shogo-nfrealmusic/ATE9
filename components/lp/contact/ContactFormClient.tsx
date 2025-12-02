@@ -17,7 +17,21 @@ type FormErrors = Partial<FormValues>;
 
 const EMAIL_REGEX = /.+@.+\..+/;
 
-export function ContactFormClient(): JSX.Element {
+export type ContactFormCopy = {
+  labelName: string;
+  labelEmail: string;
+  labelMessage: string;
+  placeholderName: string;
+  placeholderEmail: string;
+  placeholderMessage: string;
+  submit: string;
+};
+
+type ContactFormClientProps = {
+  copy: ContactFormCopy;
+};
+
+export function ContactFormClient({ copy }: ContactFormClientProps): JSX.Element {
   const [values, setValues] = useState<FormValues>({
     name: '',
     email: '',
@@ -128,13 +142,13 @@ export function ContactFormClient(): JSX.Element {
             htmlFor="name"
             className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-white/60"
           >
-            Name
+            {copy.labelName}
           </label>
           <Input
             id="name"
             name="name"
             type="text"
-            placeholder="Your name"
+            placeholder={copy.placeholderName}
             value={values.name}
             onChange={handleChange}
             disabled={isSubmitting}
@@ -147,13 +161,13 @@ export function ContactFormClient(): JSX.Element {
             htmlFor="email"
             className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-white/60"
           >
-            Email
+            {copy.labelEmail}
           </label>
           <Input
             id="email"
             name="email"
             type="email"
-            placeholder="your.email@example.com"
+            placeholder={copy.placeholderEmail}
             value={values.email}
             onChange={handleChange}
             disabled={isSubmitting}
@@ -168,12 +182,12 @@ export function ContactFormClient(): JSX.Element {
           htmlFor="message"
           className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-white/60"
         >
-          Message
+          {copy.labelMessage}
         </label>
         <Textarea
           id="message"
           name="message"
-          placeholder="Tell us about your project..."
+          placeholder={copy.placeholderMessage}
           value={values.message}
           onChange={handleChange}
           disabled={isSubmitting}
@@ -190,7 +204,7 @@ export function ContactFormClient(): JSX.Element {
           disabled={isSubmitting}
           className="w-full bg-ate9-red text-white hover:bg-ate9-red-dark disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
         >
-          <span className="truncate">{isSubmitting ? 'Sending...' : 'Send Message'}</span>
+          <span className="truncate">{isSubmitting ? 'Sending...' : copy.submit}</span>
         </Button>
       </div>
     </form>

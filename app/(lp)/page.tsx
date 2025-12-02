@@ -47,7 +47,7 @@ export default async function LPPage({ searchParams }: LPPageProps): Promise<JSX
         <SectionAbout content={content.about} locale={locale} />
         <SectionBrandPhilosophy content={content.brandPhilosophy} locale={locale} />
         <SectionServices content={content.services} locale={locale} />
-        <SectionContactForm />
+        <SectionContactForm locale={locale} />
       </main>
       <SiteFooter />
     </div>
